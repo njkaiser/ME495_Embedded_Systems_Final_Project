@@ -1,0 +1,1 @@
+Use this directory for saving media files (e.g. screenshots, pictures, videos, etc).
