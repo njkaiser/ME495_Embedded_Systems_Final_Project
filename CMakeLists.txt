@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 ## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+find_package(OpenCV)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -114,6 +114,7 @@ catkin_package(
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
+include_directories(${OpenCV_INCLUDE_DIRS})
 
 ## Declare a C++ library
 # add_library(final_project
@@ -136,6 +137,7 @@ include_directories(
 # target_link_libraries(final_project_node
 #   ${catkin_LIBRARIES}
 # )
+# target_link_libraries(my_awesome_library ${OpenCV_LIBRARIES})
 
 #############
 ## Install ##
