@@ -15,6 +15,7 @@ import baxter_interface
 
 
 def initialize():
+    # initialize Baxter
     baxter_interface.RobotEnable().enable()
 
 
@@ -23,6 +24,14 @@ def initialize():
 
 
 if __name__ == '__main__':
-    initialize()
+    try:
+        rospy.init_node('baxter_initialize')
+
+        initialize()
+        rospy.spin()
+
+    except:
+        print "\n/baxter_initialize node killed, DISABLING BAXTER\n"
+        baxter_interface.RobotEnable().disable()
 
 ### END OF SCRIPT
