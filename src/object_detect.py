@@ -6,6 +6,7 @@ sys.dont_write_bytecode = True
 import rospy
 import cv2
 import cv_bridge
+# import trackbar as tb
 # from cv_bridge import CvBridge, CvBridgeError
 import numpy as np
 
@@ -13,45 +14,74 @@ from sensor_msgs.msg import (
     Image,
 )
 
-def initialize():
-    bridge = cv_bridge.CvBridge()
+
+
+# def initial_setup():
+#     bridge = cv_bridge.CvBridge()
+#     val1 = 100
+#     val2 = 100
+#     cv2.createTrackbar('val1', 'cv_image_canny', val1, 1000, nothing)
+
+
+
+
+class Canny(object):
+    def __init__(self):
+        # create named window for appending trackbars, fill with image later
+        self.window_name = 'cv_image_canny'
+        cv2.namedWindow(self.window_name, cv2.CV_WINDOW_AUTOSIZE)
+
+        # initial values for trackbars:
+        self.val1 = 250
+        self.val2 = 150
+
+        # create trackbars
+        cv2.createTrackbar('val1', self.window_name, self.val1, 1000, self.nothing)
+        cv2.createTrackbar('val2', self.window_name, self.val2, 1000, self.nothing)
+
+    def nothing(self, x):
+        # 'do nothing' callback needed for trackbars operation
+        # may as well print out the trackbar value while I'm here
+        print "value of trackbar is:", x
+
+    def get_val1(self):
+        return cv2.getTrackbarPos('val1', self.window_name)
+
+    def get_val2(self):
+        return cv2.getTrackbarPos('val2', self.window_name)
+
 
 def callback(ros_image):
-    # pub = rospy.Publisher('/robot/xdisplay', Image, queue_size=2)
-    # pub.publish(data)
     bridge = cv_bridge.CvBridge()
 
+    # convert ROS image to openCV image for processing
     cv_image = bridge.imgmsg_to_cv2(ros_image, desired_encoding="passthrough")
 
-    cv_image_canny = cv2.Canny(cv_image, 150, 300)
+    cv_image_canny = cv2.Canny(cv_image, canny.get_val1(), canny.get_val2())
 
-    # create a canny edge detection map of the greyscale image
-    # cv2.Canny(gray, cv_image, 45, 150, 3)
-
-    # display the canny transformation
-    # cv2.ShowImage("Canny Edge Detection", cv_image)
-
-    # cv2.imshow("cv_image", cv_image)
     cv2.imshow("cv_image_canny", cv_image_canny)
-    # cv2.waitKey(1000)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    cv2.waitKey(10)
 
-    # img = cv2.imread('messi5.jpg',0)
-    # edges = cv2.Canny(img,100,200)
-
+    # pub = rospy.Publisher('/robot/xdisplay', Image, queue_size=2)
+    # pub.publish(data)
 
     ### END OF main()
 
 
 if __name__ == '__main__':
     try:
-        initialize()
+        # set up initial variables:
         rospy.init_node('object_detect')
+        canny = Canny()
+
+        # subscribe to whatever image topic we want to use for object detection
         rospy.Subscriber("/usb_cam/image_raw", Image, callback) # testing with webcam
         # rospy.Subscriber("/cameras/left_hand_camera/image", Image, callback)
+
+        # keep program open until we're good and done with it
         rospy.spin()
 
     except rospy.ROSInterruptException:
         pass
+
 ### END OF SCRIPT
