@@ -26,14 +26,14 @@ from sensor_msgs.msg import (
 
 
 class Canny(object):
-    def __init__(self):
+    def __init__(self, window_name):
         # create named window for appending trackbars, fill with image later
-        self.window_name = 'cv_image_canny'
+        self.window_name = window_name
         cv2.namedWindow(self.window_name, cv2.CV_WINDOW_AUTOSIZE)
 
         # initial values for trackbars:
-        self.val1 = 250
-        self.val2 = 150
+        self.val1 = 200
+        self.val2 = 120
 
         # create trackbars
         cv2.createTrackbar('val1', self.window_name, self.val1, 1000, self.nothing)
@@ -56,9 +56,10 @@ def callback(ros_image):
 
     # convert ROS image to openCV image for processing
     cv_image = bridge.imgmsg_to_cv2(ros_image, desired_encoding="passthrough")
+    cv_image_blur = cv2.GaussianBlur(cv_image, (5,5), 1)
+    cv_image_canny = cv2.Canny(cv_image_blur, canny.get_val1(), canny.get_val2())
 
-    cv_image_canny = cv2.Canny(cv_image, canny.get_val1(), canny.get_val2())
-
+    cv2.imshow("cv_image_blur", cv_image_blur)
     cv2.imshow("cv_image_canny", cv_image_canny)
     cv2.waitKey(10)
 
@@ -72,7 +73,7 @@ if __name__ == '__main__':
     try:
         # set up initial variables:
         rospy.init_node('object_detect')
-        canny = Canny()
+        canny = Canny('cv_image_canny')
 
         # subscribe to whatever image topic we want to use for object detection
         rospy.Subscriber("/usb_cam/image_raw", Image, callback) # testing with webcam
