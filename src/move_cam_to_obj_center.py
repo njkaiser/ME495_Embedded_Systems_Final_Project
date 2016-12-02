@@ -56,6 +56,8 @@ def move_callback(data):
     # fetch Point data from topic
     x = data.x
     y = data.y
+    z = data.z
+    print z
     # print "input from camera:     ", x, y
     # print "input from Subscriber2:", xyz_pres.x, xyz_pres.y, xyz_pres.z
     # print "(x, y) from vision node:", x, y
@@ -70,9 +72,16 @@ def move_callback(data):
     #     xyz_next.z = xyz_pres.z + 0.03#+ y/10000
 
     if (abs(x) > 5):
-        xyz_next.y = xyz_pres.y + 0.02 * x/320
+        # xyz_next.y = xyz_pres.y + 0.05 * x**2/320**2
+        xyz_next.y = xyz_pres.y + 0.04 * x/320
+
     if (abs(y) > 5):
-        xyz_next.z = xyz_pres.z - 0.02 * y/240
+        # xyz_next.z = xyz_pres.z - 0.05 * y**2/240**2
+        xyz_next.z = xyz_pres.z - 0.04 * y/240
+
+    if z:
+        # xyz_next.z = xyz_pres.z - 0.05 * y**2/240**2
+        xyz_next.x = xyz_pres.x + (z - 0.15) / 2
     # print "xyz_next.x, xyz_next.y, xyz_next.z", xyz_next.x, xyz_next.y, xyz_next.z
 
     # print "BEFORE", xyz_pres.x, xyz_pres.y, xyz_pres.z, "|", xyz_next.x, xyz_next.y, xyz_next.z,
@@ -133,8 +142,8 @@ def move_callback(data):
 
 def main():
     #Create a subscriber to /Point msg
-    rospy.Subscriber("/object_image_command", Point, move_callback)
-    rospy.Subscriber("/robot/limb/right/endpoint_state", EndpointState, get_present_state, xyz_pres)
+    rospy.Subscriber("/object_image_command", Point, move_callback, queue_size=1)
+    rospy.Subscriber("/robot/limb/right/endpoint_state", EndpointState, get_present_state, xyz_pres, queue_size=1)
     # rospy.sleep(0.5)
     rospy.spin()
 

@@ -236,7 +236,7 @@ if __name__ == '__main__':
         rospy.Subscriber("/robot/range/right_hand_range/state", Range, range_cb)
 
         print "ARGUMENT PASSED TO TIMER:", output.x, output.y, output.z
-        rospy.Timer(rospy.Duration(2), timed_output)
+        rospy.Timer(rospy.Duration(0.05), timed_output)
 
         # keep program open until we're good and done with it
         rospy.spin()
