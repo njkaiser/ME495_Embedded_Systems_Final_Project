@@ -7,7 +7,7 @@ from geometry_msgs.msg import (
     Point,
     Quaternion,
 )
-from std_msgs.msg import Header
+from std_msgs.msg import Header, Float32
 from baxter_core_msgs.srv import (
     SolvePositionIK,
     SolvePositionIKRequest,
@@ -103,7 +103,7 @@ def move_callback(data):
     # print "ikreq_r.pose_stamp", ikreq_r.pose_stamp
 
     # # try:
-    rospy.wait_for_service(ns_r, 5.0)
+    # rospy.wait_for_service(ns_r, 5.0)
     resp_r = iksvc_r(ikreq_r)
     # print resp_r
     # except (rospy.ServiceException, rospy.ROSException), e:
@@ -114,7 +114,8 @@ def move_callback(data):
         print("LEFT_SUCCESS - Valid Joint Solution Found:")
         # Format solution into Limb API-compatible dictionary
         limb_joints_r = dict(zip(resp_r.joints[0].name, resp_r.joints[0].position))
-        right.move_to_joint_positions(limb_joints_r)
+        # right.move_to_joint_positions(limb_joints_r)
+        right.set_joint_positions(limb_joints_r)
         #print limb_joints_r
     else:
         print("LEFT_INVALID POSE - No Valid Joint Solution Found.")
@@ -124,16 +125,24 @@ def move_callback(data):
     # #     print "NO SOLUTION FOUND"
     # rospy.wait_for_service(ns_r, 5.0)
     # print "AFTER ",  xyz_pres.x, xyz_pres.y, xyz_pres.z, "|", xyz_next.x, xyz_next.y, xyz_next.z,
-    # rospy.sleep(0.2)
+    # rospy.sleep(0.5)
     # rospy.spin()
+    return 0
+    
+
+def range_callback(data):
+    r = data.data
+    print r
+    # print "please show up please show up please show up"
 
 
 def main():
     #Create a subscriber to /Point msg
-    rospy.Subscriber("/object_command", Point, move_callback)
+    rospy.Subscriber("/object_image_command", Point, move_callback)
+    rospy.Subscriber("/object_range_command", Float32, range_callback)
     rospy.Subscriber("/robot/limb/right/endpoint_state", EndpointState, get_present_state, xyz_pres)
     rospy.sleep(0.5)
-    rospy.spin()
+    # rospy.spin()
 
 
 
