@@ -18,9 +18,9 @@ from baxter_core_msgs.msg import EndpointState
 
 class Position(object):
     def __init__(self):
-        self.x = 0.9
-        self.y = -0.5
-        self.z = 0.25
+        self.x = 1.0 # FORWARD/BACK, + is Baxter's forward
+        self.y = -0.5 # LEFT/RIGHT, + is Baxter's left
+        self.z = 0.25 # VERTICAL, + is up
 
 
 # GLOBALS (SORRY JARVIS)
@@ -70,9 +70,9 @@ def move_callback(data):
     #     xyz_next.z = xyz_pres.z + 0.03#+ y/10000
 
     if (abs(x) > 5):
-        xyz_next.y = xyz_pres.y + x/5000
+        xyz_next.y = xyz_pres.y + 0.02 * x/320
     if (abs(y) > 5):
-        xyz_next.z = xyz_pres.z - y/5000
+        xyz_next.z = xyz_pres.z - 0.02 * y/240
     # print "xyz_next.x, xyz_next.y, xyz_next.z", xyz_next.x, xyz_next.y, xyz_next.z
 
     # print "BEFORE", xyz_pres.x, xyz_pres.y, xyz_pres.z, "|", xyz_next.x, xyz_next.y, xyz_next.z,
@@ -128,21 +128,15 @@ def move_callback(data):
     # rospy.sleep(0.5)
     # rospy.spin()
     return 0
-    
 
-def range_callback(data):
-    r = data.data
-    print r
-    # print "please show up please show up please show up"
 
 
 def main():
     #Create a subscriber to /Point msg
     rospy.Subscriber("/object_image_command", Point, move_callback)
-    rospy.Subscriber("/object_range_command", Float32, range_callback)
     rospy.Subscriber("/robot/limb/right/endpoint_state", EndpointState, get_present_state, xyz_pres)
-    rospy.sleep(0.5)
-    # rospy.spin()
+    # rospy.sleep(0.5)
+    rospy.spin()
 
 
 

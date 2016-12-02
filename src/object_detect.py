@@ -99,12 +99,14 @@ def object_position(img):
             x = center[0] - img_width / 2
             y = center[1] - img_height / 2
             if abs(x) < 50:
-                x = 0
+                x = 0.
             if abs(y) < 50:
-                y = 0
+                y = 0.
+            coords = [x, y, 0]
         except UnboundLocalError:
+            coords = [0, 0, 0]
             continue
-        print "COORDINATES:", x, y
+        # print "COORDINATES:", x, y
 
         # coords = Point()
         # coords.x = x
@@ -112,7 +114,7 @@ def object_position(img):
         # coords.z = 0
         # img_pub.publish(coords)
 
-        coords = [x, y, 0]
+        # coords = [x, y, 0]
 
 
         # if len(contours) > 0:
@@ -156,6 +158,7 @@ def image_cb(ros_img, output):
     img_raw = cv2.flip(bridge.imgmsg_to_cv2(ros_img, desired_encoding="bgr8"), 1)
     # img_width, img_height, img_depth = img_raw.shape
     # print img_width, img_height, img_depth
+
     img_blur = cv2.GaussianBlur(img_raw, (9,9), 1)
     img_hsv = cv2.cvtColor(img_blur, cv2.COLOR_BGR2HSV)
     img_canny = cv2.Canny(img_blur, cannywin.get_vals()[0], cannywin.get_vals()[1])
@@ -172,29 +175,35 @@ def image_cb(ros_img, output):
 
     output.x = coords[0]
     output.y = coords[1]
-    output.z = coords[2]
     # output = coords
-
 
 
 def range_cb(data):
     # Baxter's hand range finders only read from 0.4 to 0.004
     r = data.range
+    # print r
     if r <= 0.3:
         # print r
-        rng_pub.publish(r)
+        # rng_pub.publish(r)
+        output.z = r
+    else:
+        output.z = 0
 
 
-# def timed_output(coords):
-#     if coords.x != 0 and coords.y != 0:
-#         p = Point()
-#         p.x = coords.x
-#         p.y = coords.y
-#         p.z = coords.z
-#         print p
-#         img_pub.publish(p)
-#     else:
-#         pass
+def timed_output(event):
+    p = Point()
+    p.x = output.x
+    p.y = output.y
+    if output.x != 0. or output.y != 0.: # or output.z != 0
+        p.z = output.z
+        print "THIS IS THE OUTPUT WHEN x/y != 0:", p.x, p.y, p.z
+    else:
+        # print "NO IDEA WHY THIS IS HERE"
+        p.z = 0.
+        print "THIS IS THE OUTPUT WHEN x/y == 0:", p.x, p.y, p.z
+
+    img_pub.publish(p)
+    return p
 
 
 if __name__ == '__main__':
@@ -204,7 +213,7 @@ if __name__ == '__main__':
         rospy.init_node('object_detect')
         # rospy.init_node('object_command')
         img_pub = rospy.Publisher('object_image_command', Point, queue_size=1)
-        rng_pub = rospy.Publisher('object_range_command', Float32, queue_size=10)
+        # rng_pub = rospy.Publisher('object_range_command', Float32, queue_size=1)
 
         pts = deque(maxlen=32)
 
@@ -223,11 +232,11 @@ if __name__ == '__main__':
         # rospy.Subscriber("/usb_cam/image_raw", Image, image_cb) # testing with webcam
         rospy.Subscriber("/cameras/right_hand_camera/image", Image, image_cb, output)
 
-        # subscribe to range topic - only works within < 15"
+        # subscribe to range topic - only works within < 30 cm
         rospy.Subscriber("/robot/range/right_hand_range/state", Range, range_cb)
 
-        # print output
-        # rospy.Timer(rospy.Duration(2), timed_output(output))
+        print "ARGUMENT PASSED TO TIMER:", output.x, output.y, output.z
+        rospy.Timer(rospy.Duration(2), timed_output)
 
         # keep program open until we're good and done with it
         rospy.spin()
