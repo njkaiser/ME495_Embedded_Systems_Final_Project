@@ -26,11 +26,10 @@ class Position(object):
 # GLOBALS (SORRY JARVIS)
 # instantiate required classes
 rospy.init_node("move_cam_at_obj_center")
-xy = Position()
 xyz_pres = Position()
 xyz_next = Position()
 right = baxter_interface.Limb('right')
-# Call service
+# # Call service
 ns_r = "ExternalTools/" + 'right' + "/PositionKinematicsNode/IKService"
 iksvc_r = rospy.ServiceProxy(ns_r, SolvePositionIK)
 ikreq_r = SolvePositionIKRequest()
@@ -45,6 +44,7 @@ def get_present_state(data, xyz_pres):
         xyz_pres.x = x
         xyz_pres.y = y
         xyz_pres.z = z
+        # print "ENTERED CALLBACK 2", x, y, z
 
 
 def move_callback(data):
@@ -56,34 +56,35 @@ def move_callback(data):
     # fetch Point data from topic
     x = data.x
     y = data.y
+    # print "input from camera:     ", x, y
+    # print "input from Subscriber2:", xyz_pres.x, xyz_pres.y, xyz_pres.z
+    # print "(x, y) from vision node:", x, y
 
-    rospy.Subscriber("/robot/limb/right/endpoint_state", EndpointState, get_present_state, xyz_pres)
-
-    # if (x != 0) && (y != 0):
-    if (x > 5):
-        xyz_next.y = xyz_pres.y + 0.02
-    if (x < -5):
-        xyz_next.y = xyz_pres.y - 0.02
+    # if (x > 5):
+    #     xyz_next.y = xyz_pres.y + 0.03#+ x/10000
+    # if (x < -5):
+    #     xyz_next.y = xyz_pres.y - 0.03#- x/10000
     # if (y > 5):
-    #     xyz_next.z = xyz_pres.z - 0.02
+    #     xyz_next.z = xyz_pres.z - 0.03#- y/10000
     # if (y < -5):
-    #     xyz_next.z = xyz_pres.z + 0.02
+    #     xyz_next.z = xyz_pres.z + 0.03#+ y/10000
 
-    # xyz_pres.x = xyz_next.x
-    # xyz_pres.y = xyz_next.y
-    # xyz_pres.z = xyz_next.z
+    if (abs(x) > 5):
+        xyz_next.y = xyz_pres.y + x/5000
+    if (abs(y) > 5):
+        xyz_next.z = xyz_pres.z - y/5000
+    # print "xyz_next.x, xyz_next.y, xyz_next.z", xyz_next.x, xyz_next.y, xyz_next.z
+
+    # print "BEFORE", xyz_pres.x, xyz_pres.y, xyz_pres.z, "|", xyz_next.x, xyz_next.y, xyz_next.z,
 
     hdr = Header(stamp=rospy.Time.now(), frame_id='base')
-
-    print "BEFORE", xyz_pres.x, xyz_pres.y, xyz_pres.z, "|", xyz_next.x, xyz_next.y, xyz_next.z,
-
     poses = {
         'right': PoseStamped(
             header=hdr,
             pose=Pose(
                 position=Point(
                     x= xyz_next.x,
-                    y= xyz_pres.y,
+                    y= xyz_next.y,
                     z= xyz_next.z,
                 ),
                 orientation=Quaternion(
@@ -96,20 +97,12 @@ def move_callback(data):
         ),
     }
 
-    # print "poses['right'].pose.position.x =", poses['right'].pose.position.x
-    # print type(poses['right'])
-    ikreq_r.pose_stamp = []
-    ikreq_r.pose_stamp.append(poses['right'])
-    # ikreq_r.pose_stamp[0].pose.position.x = xyz_next.x
-    # ikreq_r.pose_stamp[0].pose.position.y = xyz_next.y
-    # ikreq_r.pose_stamp[0].pose.position.z = xyz_next.z
-    # ikreq_r.pose_stamp[0].pose.orientation.x = 0.0
-    # ikreq_r.pose_stamp[0].pose.orientation.y = 0.71
-    # ikreq_r.pose_stamp[0].pose.orientation.z = 0.0
-    # ikreq_r.pose_stamp[0].pose.orientation.w = 0.71
-    # print len
-    # print ikreq_r.pose_stamp
-    # try:
+    # print poses
+
+    ikreq_r.pose_stamp = [poses['right']]
+    # print "ikreq_r.pose_stamp", ikreq_r.pose_stamp
+
+    # # try:
     rospy.wait_for_service(ns_r, 5.0)
     resp_r = iksvc_r(ikreq_r)
     # print resp_r
@@ -125,25 +118,22 @@ def move_callback(data):
         #print limb_joints_r
     else:
         print("LEFT_INVALID POSE - No Valid Joint Solution Found.")
-        print xyz_pres.x, xyz_pres.y, "|", xyz_next.x, xyz_next.y
-    # try:
-    # except UnboundLocalError:
-    #     print "Fuck u"
-
-    # except:
-    #     pass
+    #     print xyz_pres.x, xyz_pres.y, "|", xyz_next.x, xyz_next.y
+    # # try:
+    # # except UnboundLocalError:
+    # #     print "NO SOLUTION FOUND"
+    # rospy.wait_for_service(ns_r, 5.0)
     # print "AFTER ",  xyz_pres.x, xyz_pres.y, xyz_pres.z, "|", xyz_next.x, xyz_next.y, xyz_next.z,
-    rospy.sleep(0.5)
+    # rospy.sleep(0.2)
+    # rospy.spin()
 
 
 def main():
-
-    while not rospy.is_shutdown():
-        #Create a subscriber to /Point msg
-        print "got here 1"
-        rospy.Subscriber("/object_command", Point, move_callback)
-        rospy.sleep(0.5)
-        # rospy.Subscriber("/robot/limb/right/endpoint_state", EndpointState, get_present_state(EndpointState,xyz_pres))
+    #Create a subscriber to /Point msg
+    rospy.Subscriber("/object_command", Point, move_callback)
+    rospy.Subscriber("/robot/limb/right/endpoint_state", EndpointState, get_present_state, xyz_pres)
+    rospy.sleep(0.5)
+    rospy.spin()
 
 
 
