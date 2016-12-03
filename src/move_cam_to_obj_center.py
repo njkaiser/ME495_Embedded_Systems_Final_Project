@@ -126,7 +126,6 @@ def move_callback(data):
         # right.move_to_joint_positions(limb_joints_r)
         right.set_joint_positions(limb_joints_r)
         #print limb_joints_r
-        rospy.sleep(0.05)
     else:
         print("LEFT_INVALID POSE - No Valid Joint Solution Found.")
     #     print xyz_pres.x, xyz_pres.y, "|", xyz_next.x, xyz_next.y
