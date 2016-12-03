@@ -59,10 +59,10 @@ def main():
     
     # specify x and y
     # The approximately possible bound of x and y for left arm at z = -0.7
-    # ----> x : [0.77,1.03]
-    # ----> y : [0.05,0.53]
-    x = 0.85
-    y = 0.35
+    # ----> x : [0.64,1.06]
+    # ----> y : [0.01,0.53]
+    x = 0.8
+    y = 0.1
 
     #z-axis and orientation must be kept in this form for baxter to reach outward
     poses = {
@@ -91,7 +91,7 @@ def main():
     except (rospy.ServiceException, rospy.ROSException), e:
         rospy.logerr("Service call failed: %s" % (e,))
         return 
-    
+    print resp_l
     if (resp_l.isValid[0]):
         print("LEFT_SUCCESS - Valid Joint Solution Found:")
         # Format solution into Limb API-compatible dictionary
@@ -99,13 +99,12 @@ def main():
         print limb_joints_l
     else:
         print("LEFT_INVALID POSE - No Valid Joint Solution Found.")
-
     left.move_to_joint_positions(limb_joints_l)
 
-    rospy.sleep(5.)
+    # rospy.sleep(5.)
 
-    #move outward more 5 cm in x-dir ----> Sill
-    #z-axis and orientation must be kept in this form
+    # move outward more 5 cm in x-dir ----> Sill
+    # z-axis and orientation must be kept in this form
     poses = {
         'left': PoseStamped(
             header=hdr,
@@ -124,6 +123,8 @@ def main():
             ),
         ),
     }
+    ikreq_l = SolvePositionIKRequest()
+
     ikreq_l.pose_stamp.append(poses['left'])
     try:
         rospy.wait_for_service(ns_l, 5.0)

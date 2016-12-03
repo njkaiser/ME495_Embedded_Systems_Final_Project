@@ -7,12 +7,18 @@ import cv2
 import cv_bridge
 import numpy as np
 from collections import deque
+from std_msgs.msg import Float32
 from geometry_msgs.msg import Point
 
 from sensor_msgs.msg import (
-    Image,
+    Image, Range
 )
 
+class Output(object):
+    def __init__(self):
+        self.x = 0
+        self.y = 0
+        self.z = 0
 
 
 class window_with_trackbars(object):
@@ -93,17 +99,23 @@ def object_position(img):
             x = center[0] - img_width / 2
             y = center[1] - img_height / 2
             if abs(x) < 50:
-                x = 0
+                x = 0.
             if abs(y) < 50:
-                y = 0
+                y = 0.
+            coords = [x, y, 0]
         except UnboundLocalError:
+            coords = [0, 0, 0]
             continue
-        print "COORDINATES:", x, y
+        # print "COORDINATES:", x, y
 
-        coords = Point()
-        coords.x = x
-        coords.y = y
-        ocpub.publish(coords)
+        # coords = Point()
+        # coords.x = x
+        # coords.y = y
+        # coords.z = 0
+        # img_pub.publish(coords)
+
+        # coords = [x, y, 0]
+
 
         # if len(contours) > 0:
         #     c = max(contours,key=cv2.contourArea)
@@ -136,22 +148,23 @@ def object_position(img):
         #         #     thickness = int(np.sqrt(32 / float(i + 1)) * 2.5)
         #         #     cv2.line(img, pts[i-1], pts[i], (0,0,255), thickness)
 
-    return img
+    return img, coords
 
 
-def callback(ros_img):
+def image_cb(ros_img, output):
     bridge = cv_bridge.CvBridge()
 
     # convert ROS image to openCV image for processing
     img_raw = cv2.flip(bridge.imgmsg_to_cv2(ros_img, desired_encoding="bgr8"), 1)
     # img_width, img_height, img_depth = img_raw.shape
     # print img_width, img_height, img_depth
+
     img_blur = cv2.GaussianBlur(img_raw, (9,9), 1)
     img_hsv = cv2.cvtColor(img_blur, cv2.COLOR_BGR2HSV)
     img_canny = cv2.Canny(img_blur, cannywin.get_vals()[0], cannywin.get_vals()[1])
 
     img_red = filter_red(img_hsv, img_raw)
-    tracked_red = object_position(img_red)
+    tracked_red, coords = object_position(img_red)
 
     # cv2.imshow("image_blur", img_blur)
     cv2.imshow("image_canny", img_canny)
@@ -160,25 +173,53 @@ def callback(ros_img):
     cv2.imshow("tracked_red", tracked_red)
     cv2.waitKey(10)
 
+    output.x = coords[0]
+    output.y = coords[1]
+    # output = coords
 
 
+def range_cb(data):
+    # Baxter's hand range finders only read from 0.4 to 0.004
+    r = data.range
+    # print r
+    if r <= 0.3:
+        # print r
+        # rng_pub.publish(r)
+        output.z = r
+    else:
+        output.z = 0
 
-    ### END OF main()
 
+def timed_output(event):
+    p = Point()
+    p.x = output.x
+    p.y = output.y
+    if output.x != 0. or output.y != 0.: # or output.z != 0
+        p.z = output.z
+        print "THIS IS THE OUTPUT WHEN x/y != 0:", p.x, p.y, p.z
+    else:
+        # print "NO IDEA WHY THIS IS HERE"
+        p.z = 0.
+        print "THIS IS THE OUTPUT WHEN x/y == 0:", p.x, p.y, p.z
+
+    img_pub.publish(p)
+    return p
 
 
 if __name__ == '__main__':
     try:
+        output = Output()
         # set up initial variables:
         rospy.init_node('object_detect')
         # rospy.init_node('object_command')
-        ocpub = rospy.Publisher('object_command', Point, queue_size=10)
+        img_pub = rospy.Publisher('object_image_command', Point, queue_size=1)
+        # rng_pub = rospy.Publisher('object_range_command', Float32, queue_size=1)
 
         pts = deque(maxlen=32)
 
         # create window and set up necessary thresholds:
         canny_tb_highs = [1000, 1000]
-        # canny_tb_defaults = [200, 120] # for camera
+        # canny_tb_defaults = [200, 120] # for webcam
         canny_tb_defaults = [110, 110] # for Baxter hand camera
         cannywin = window_with_trackbars('image_canny', canny_tb_defaults, canny_tb_highs)
 
@@ -188,8 +229,14 @@ if __name__ == '__main__':
         redwin = window_with_trackbars('image_red', red_tb_defaults, red_tb_highs)
 
         # subscribe to whatever image topic we want to use for object detection
-        # rospy.Subscriber("/usb_cam/image_raw", Image, callback) # testing with webcam
-        rospy.Subscriber("/cameras/right_hand_camera/image", Image, callback)
+        # rospy.Subscriber("/usb_cam/image_raw", Image, image_cb) # testing with webcam
+        rospy.Subscriber("/cameras/right_hand_camera/image", Image, image_cb, output)
+
+        # subscribe to range topic - only works within < 30 cm
+        rospy.Subscriber("/robot/range/right_hand_range/state", Range, range_cb)
+
+        print "ARGUMENT PASSED TO TIMER:", output.x, output.y, output.z
+        rospy.Timer(rospy.Duration(0.05), timed_output)
 
         # keep program open until we're good and done with it
         rospy.spin()
