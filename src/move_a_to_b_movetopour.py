@@ -17,7 +17,7 @@ import ang_calc_lib as angcalc
 
 
 def main():
-    rospy.init_node("joint_move_cartesian")
+    rospy.init_node("pos_srv_node")
     #Create a publisher
     left = baxter_interface.Limb('left')
     left_gripper = baxter_interface.Gripper('left')
