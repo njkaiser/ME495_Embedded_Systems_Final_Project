@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   message_generation
   std_msgs
+  geometry_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -54,6 +55,7 @@ find_package(OpenCV)
  add_service_files(
    FILES
    grasp_status.srv
+   move.srv
  )
 
 ## Generate actions in the 'action' folder
@@ -67,6 +69,7 @@ find_package(OpenCV)
  generate_messages(
    DEPENDENCIES
    std_msgs  # Or other packages containing msgs
+   geometry_msgs
  )
 
 ################################################
