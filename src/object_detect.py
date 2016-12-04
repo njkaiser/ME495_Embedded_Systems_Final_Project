@@ -77,76 +77,80 @@ def object_position(img):
     greyscale = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     contours = cv2.findContours(greyscale,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)[0]
 
-    for i, c in enumerate(contours):
-        M = cv2.moments(c)
-        if M["m00"] > 2500:
-            try:
-                center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-            except ZeroDivisionError:
-                continue
-            # print center
-            # print center[0], center[1]
-            epsilon = 0.003 * cv2.arcLength(c, True)
-            c = cv2.approxPolyDP(c, epsilon, True)
-            cv2.drawContours(img, [c], -1, (0, 255, 0), thickness=2, maxLevel=0)
-            # cv2.drawContours(image, contours, contourIdx, color[, thickness[, lineType[, hierarchy[, maxLevel[, offset]]]]])
-            cv2.circle(img, center, 5, (0, 255, 0), -1)
-            # cv2.putText(img, str(i), (center[0] - 20, center[1] - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-
-        img_height, img_width, img_depth = img.shape
-
+    c = max(contours,key=cv2.contourArea)
+    # for i, c in enumerate(contours):
+    # print i
+    M = cv2.moments(c)
+    if M["m00"] > 2000:
         try:
-            x = center[0] - img_width / 2
-            y = center[1] - img_height / 2
-            if abs(x) < 50:
-                x = 0.
-            if abs(y) < 50:
-                y = 0.
-            coords = [x, y, 0]
-        except UnboundLocalError:
+            center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+        except ZeroDivisionError:
+            # continue
             coords = [0, 0, 0]
-            continue
-        # print "COORDINATES:", x, y
+            return coords
+        # print center
+        # print center[0], center[1]
+        epsilon = 0.003 * cv2.arcLength(c, True)
+        c = cv2.approxPolyDP(c, epsilon, True)
+        cv2.drawContours(img, [c], -1, (0, 255, 0), thickness=2, maxLevel=0)
+        # cv2.drawContours(image, contours, contourIdx, color[, thickness[, lineType[, hierarchy[, maxLevel[, offset]]]]])
+        cv2.circle(img, center, 5, (0, 255, 0), -1)
+        # cv2.putText(img, str(i), (center[0] - 20, center[1] - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-        # coords = Point()
-        # coords.x = x
-        # coords.y = y
-        # coords.z = 0
-        # img_pub.publish(coords)
+    img_height, img_width, img_depth = img.shape
 
-        # coords = [x, y, 0]
+    try:
+        x = center[0] - img_width / 2
+        y = center[1] - img_height / 2
+        if abs(x) < 10:
+            x = 0.
+        if abs(y) < 10:
+            y = 0.
+        coords = [x, y, 0]
+    except UnboundLocalError:
+        coords = [0, 0, 0]
+        # continue
+    # print "COORDINATES:", x, y
+
+    # coords = Point()
+    # coords.x = x
+    # coords.y = y
+    # coords.z = 0
+    # img_pub.publish(coords)
+
+    # coords = [x, y, 0]
 
 
-        # if len(contours) > 0:
-        #     c = max(contours,key=cv2.contourArea)
-        #     ((x,y), r) = cv2.minEnclosingCircle(c)
-        #     M = cv2.moments(c)
-        #     center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-        #
-        #     if r > 5:
-        #         #send message
-        #         # sumelements = [0, 0]
-        #         # pts.appendleft(center)
-        #         # deliminator = 5
-        #         # if len(pts) < deliminator:
-        #         #     deliminator = len(pts)
-        #         # for i in np.arange(0, deliminator):
-        #         #     sumelements[0] += pts[i][0]
-        #         #     sumelements[1] += pts[i][1]
-        #         # sumelements[0] = sumelements[0] / deliminator
-        #         # sumelements[1] = sumelements[1] / deliminator
-        #         # moto_logic(sumelements)
-        #
-        #         print c
-        #
-        #         #draw
-        #         # cv2.circle(img,(int(x), int(y)), int(r), (0, 255, 0), 2)
-        #         # cv2.circle(img,center, 5, (0, 0, 255), -1)
-        #         # pts.appendleft(center)
-        #
-        #         # for i in np.arange(1, len(pts)):
-        #         #     thickness = int(np.sqrt(32 / float(i + 1)) * 2.5)
-        #         #     cv2.line(img, pts[i-1], pts[i], (0,0,255), thickness)
+    # if len(contours) > 0:
+    #     c = max(contours,key=cv2.contourArea)
+    #     ((x,y), r) = cv2.minEnclosingCircle(c)
+    #     M = cv2.moments(c)
+    #     center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+    #
+    #     if r > 5:
+    #         #send message
+    #         # sumelements = [0, 0]
+    #         # pts.appendleft(center)
+    #         # deliminator = 5
+    #         # if len(pts) < deliminator:
+    #         #     deliminator = len(pts)
+    #         # for i in np.arange(0, deliminator):
+    #         #     sumelements[0] += pts[i][0]
+    #         #     sumelements[1] += pts[i][1]
+    #         # sumelements[0] = sumelements[0] / deliminator
+    #         # sumelements[1] = sumelements[1] / deliminator
+    #         # moto_logic(sumelements)
+    #
+    #         print c
+    #
+    #         #draw
+    #         # cv2.circle(img,(int(x), int(y)), int(r), (0, 255, 0), 2)
+    #         # cv2.circle(img,center, 5, (0, 0, 255), -1)
+    #         # pts.appendleft(center)
+    #
+    #         # for i in np.arange(1, len(pts)):
+    #         #     thickness = int(np.sqrt(32 / float(i + 1)) * 2.5)
+    #         #     cv2.line(img, pts[i-1], pts[i], (0,0,255), thickness)
 
     return img, coords
 
@@ -236,7 +240,7 @@ if __name__ == '__main__':
         rospy.Subscriber("/robot/range/right_hand_range/state", Range, range_cb)
 
         print "ARGUMENT PASSED TO TIMER:", output.x, output.y, output.z
-        rospy.Timer(rospy.Duration(0.05), timed_output)
+        rospy.Timer(rospy.Duration(0.075), timed_output)
 
         # keep program open until we're good and done with it
         rospy.spin()

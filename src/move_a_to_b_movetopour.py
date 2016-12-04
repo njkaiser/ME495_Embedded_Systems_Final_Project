@@ -15,9 +15,8 @@ from baxter_core_msgs.srv import (
 import numpy as np
 import ang_calc_lib as angcalc
 
+
 def main():
-
-
     rospy.init_node("joint_move_cartesian")
     #Create a publisher
     left = baxter_interface.Limb('left')
@@ -57,7 +56,7 @@ def main():
     #         ),
     #     ),
     # }
-    
+
     # subscribe to /robot/limb/left/endpoint_state to get present position x of end-effector >>>> haven't done
     # The approximately possible bound of x and y for left arm at z = -0.7
     # ----> x : [0.77,1.03]
@@ -83,15 +82,14 @@ def main():
             ),
         ),
     }
-    x_b4 = 0.839724445993
     ikreq_l.pose_stamp.append(poses['left'])
     try:
         rospy.wait_for_service(ns_l, 5.0)
         resp_l = iksvc_l(ikreq_l)
     except (rospy.ServiceException, rospy.ROSException), e:
         rospy.logerr("Service call failed: %s" % (e,))
-        return 
-    
+        return
+
     if (resp_l.isValid[0]):
         print("LEFT_SUCCESS - Valid Joint Solution Found:")
         # Format solution into Limb API-compatible dictionary

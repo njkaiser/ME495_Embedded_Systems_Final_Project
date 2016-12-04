@@ -112,10 +112,10 @@ def bottle_search(start, end, side):
             # Format solution into Limb API-compatible dictionary
             limb_joints = dict(zip(resp.joints[0].name, resp.joints[0].position))
             if i == 0:
-                arm.set_joint_position_speed(0.6) # % of max speed
+                arm.set_joint_position_speed(0.5) # % of max speed
                 arm.move_to_joint_positions(limb_joints)
             else:
-                arm.set_joint_position_speed(0.25) # % of max speed
+                arm.set_joint_position_speed(0.05 * max([xyz.x/320, 0.3]))# % of max speed
                 arm.set_joint_positions(limb_joints)
                 # if stop:
                     # x_is_zero = True
@@ -130,8 +130,8 @@ def bottle_search(start, end, side):
 
                     # ROSPY.SLEEP(5)
 
-                print "value",  xyz.x
-                if xyz.x == 0.0:
+                # print "value", xyz.x
+                if xyz.x <= 30 and xyz.x >= -5:
                     # stop = True
                     return xyz_pres.get_point()
 
@@ -140,7 +140,8 @@ def bottle_search(start, end, side):
         else:
             print("LEFT_INVALID POSE - No Valid Joint Solution Found.")
 
-    return
+    print "SHOULDN'T MAKE IT HERE", xyz_pres.get_point(), end.get_point()
+    return xyz_pres.get_point()
 
 
 def get_present_state(data, xyz_pres):
@@ -189,22 +190,30 @@ def main():
     arm.set_joint_position_speed(0.2) # % of max speed
 
     x = 0.9
-    y_start = -0.45
+    y_start = -0.5
     y_end = 0.2
     z = 0.0
     start_pos = Position(x, y_start, z)
     end_pos = Position(x, y_end, z)
 
     bottle_positions = []
-    for i in [1, 2]:
+    for i in np.arange(3):
+        print "start position requested: ", start_pos.get_point()
+        print "end position requested", end_pos.get_point()
         bp = bottle_search(start_pos, end_pos, side)
         print bp
+        # quit()
         bottle_positions.append(bp)
-        start_pos = bp
-        start_pos.y += 0.07 # guess
+        print "type(start_pos)", type(start_pos)
+        # print start_pos
+        print "type(bp)", type(bp)
+        # print bp
+        start_pos.y = bp.y + 0.07
+        # start_pos.y += 0.07 # guess
 
     print "FINAL POSITIONS APPENDED:"
     print bottle_positions
+
 
 
     # move outward more 5 cm in x-dir ----> Sill
