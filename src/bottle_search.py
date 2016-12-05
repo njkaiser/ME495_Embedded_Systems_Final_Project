@@ -21,7 +21,8 @@ from final_project.msg import moveto
 
 
 class Position(object):
-    def __init__(self, x, y, z):
+    # initialize to a neutral-ish postion, in case we accidentally call without overwriting the values
+    def __init__(self, x=0.9, y=0.0, z=0.3):
         self.x = x # FORWARD/BACK, + is Baxter's forward
         self.y = y # LEFT/RIGHT, + is Baxter's left
         self.z = z # VERTICAL, + is up
@@ -53,8 +54,6 @@ mvpub = rospy.Publisher("pos_cmd", moveto, queue_size=1)
 
 
 def bottle_search(start, end, side):
-    # stop = False
-    # hdr = Header(stamp=rospy.Time.now(), frame_id='base')
     y_start = start.y
     y_end = end.y
     dy = abs(y_start - y_end)
