@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 import rospy
 import baxter_interface
 from geometry_msgs.msg import (
@@ -14,8 +15,8 @@ from baxter_core_msgs.srv import (
 )
 import numpy as np
 from baxter_core_msgs.msg import EndpointState
-# from ~/ME495_Final_Project/ws/src/baxter_interface/src/joint_trajectory_action/joint_trajectory_action.py import JointTrajectoryActionServer
 from final_project.srv import move
+from final_project.msg import moveto
 
 
 
@@ -46,7 +47,8 @@ ns = "ExternalTools/" + side + "/PositionKinematicsNode/IKService"
 iksvc = rospy.ServiceProxy(ns, SolvePositionIK)
 ikreq = SolvePositionIKRequest()
 
-# mvsrv = rospy.ServiceProxy("position_service", move)
+mvsrv = rospy.ServiceProxy("position_service", move)
+mvpub = rospy.Publisher("pos_cmd", moveto, queue_size=1)
 
 
 
@@ -56,160 +58,56 @@ def bottle_search(start, end, side):
     y_start = start.y
     y_end = end.y
     dy = abs(y_start - y_end)
-    npoints = int(dy/0.03) # SWAG
+    npoints = int(dy/0.01) # SWAG
     x = start.x
     z = start.z
     # for i, y in enumerate(np.linspace(y_start, y_end, npoints, endpoint=True)):
-    mvsrv = rospy.ServiceProxy("/position_service", move)
     # rospy.wait_for_service(move, 5.0)
     # x = 0.9
     # y = -0.5
     # z = 0.0
     start = Point()
-    end = Point()
     start.x, start.y, start.z = x, y_start, z
-    end.x, end.y, end.z = x, y_end, z
-    retval = mvsrv('right', start, end, 0.5, npoints)
-    status = retval.status
-    print(status)
+    print "start position requested: ", start
+    retval = mvsrv('right', start, 0.5, npoints)
 
-    start.x, start.y, start.z = x, y_end, z
-    retval = mvsrv('right', start, end, 0.5, npoints)
-    status = retval.status
-    print(status)
+
+
+    end = Point()
+    end.x, end.y, end.z = x, y_end, z
+    print "end position requested", end
+    mvpub.publish('right', end, 0.2, npoints)
+
 
     return 0
-    #     # print "X = ", xyz.x
-    #     # if not stop:
-    #     pose = {
-    #         side: PoseStamped(
-    #             header=hdr,
-    #             pose=Pose(
-    #                 position=Point(
-    #                     x= x,
-    #                     y= y,
-    #                     z= z,
-    #                 ),
-    #                 # z-axis and orientation must be kept in this form for baxter to reach outward
-    #                 orientation=Quaternion(
-    #                     x = 0.0,
-    #                     y = 0.71,
-    #                     z = 0.0,
-    #                     w = 0.71,
-    #                 ),
-    #             ),
-    #         ),
-    #     }
-    #     # else :
-    #     #    # print "not hereeeee"
-    #     #     pose = {
-    #     #         side: PoseStamped(
-    #     #             header=hdr,
-    #     #             pose=Pose(
-    #     #                 position=Point(
-    #     #                     x= xyz_pres.x,
-    #     #                     y= xyz_pres.y,
-    #     #                     z= xyz_pres.z,
-    #     #                 ),
-    #     #                 orientation=Quaternion(
-    #     #                     x = 0.0,
-    #     #                     y = 0.71,
-    #     #                     z = 0.0,
-    #     #                     w = 0.71,
-    #     #                 ),
-    #     #             ),
-    #     #         ),
-    #     #     }
-    #
-    #     ikreq.pose_stamp = [pose[side]]
-    #
-    #     try:
-    #         resp = iksvc(ikreq)
-    #     except (rospy.ServiceException, rospy.ROSException), e:
-    #         rospy.logerr("Service call failed: %s" % (e,))
-    #         return
-    #         # print resp
-    #     if (resp.isValid[0]):
-    #         # print("LEFT_SUCCESS - Valid Joint Solution Found:")
-    #         # Format solution into Limb API-compatible dictionary
-    #         limb_joints = dict(zip(resp.joints[0].name, resp.joints[0].position))
-    #         if i == 0:
-    #             arm.set_joint_position_speed(0.5) # % of max speed
-    #             arm.move_to_joint_positions(limb_joints)
-    #         else:
-    #             arm.set_joint_position_speed(0.05 * max([xyz.x/320, 0.3]))# % of max speed
-    #             arm.set_joint_positions(limb_joints)
-    #             # if stop:
-    #                 # x_is_zero = True
-    #                 # if x_is_zero:
-    #                 # bottle_xyz.append(xyz_pres.get_point())
-    #                 # x_is_zero = True
-    #
-    #                 # can_count == False
-    #                 # if
-    #                 # print "Bottle_xyz : ", bottle_xyz
-    #                 # return xyz_pres.get_point()
-    #
-    #                 # ROSPY.SLEEP(5)
-    #
-    #             # print "value", xyz.x
-    #             if xyz.x <= 30 and xyz.x >= -5:
-    #                 # stop = True
-    #                 return xyz_pres.get_point()
-    #
-    #             # print limb_joints
-    #             rospy.sleep(0.001)
-    #     else:
-    #         print("LEFT_INVALID POSE - No Valid Joint Solution Found.")
-    #
-    # print "SHOULDN'T MAKE IT HERE", xyz_pres.get_point(), end.get_point()
-    # return xyz_pres.get_point()
+
 
 
 def get_present_state(data, xyz_pres):
         x = data.pose.position.x
         y = data.pose.position.y
         z = data.pose.position.z
-        # print x,y,z
         xyz_pres.x = x
         xyz_pres.y = y
         xyz_pres.z = z
-        # print "ENTERED CALLBACK 2", x, y, z
+
 
 
 def move_callback(data, xyz):
     xyz.x = data.x
     xyz.y = data.y
     xyz.z = data.z
-    # print "THIS IS X : ", x
     return 0
 
 
-
 def main():
-
-
-
-
-    # print "XYZ_PRES : ", xyz_pres
-    # bottle_xyz = []
-    # if len(bottle_xyz) == 3:
-    #     return
-    #Create a publisher
-
-
-
     #Subscribe to image
     rospy.Subscriber("/robot/limb/right/endpoint_state", EndpointState, get_present_state, xyz_pres, queue_size=1)
     rospy.Subscriber("/object_image_command", Point, move_callback, xyz, queue_size=1)
+    rospy.Publisher("pos_cmd", moveto, queue_size=1)
 
-    # Call service
     rospy.wait_for_service(ns, 5.0)
-
-    # jtas = JointTrajectoryActionServer(side, reconfig_server, rate=100.0,
-    #          mode='position_w_id'):
-
-    arm.set_joint_position_speed(0.2) # % of max speed
+    rospy.sleep(0.05)
 
     x = 0.9
     y_start = -0.5
@@ -220,8 +118,6 @@ def main():
 
     bottle_positions = []
     # for i in np.arange(3):
-    print "start position requested: ", start_pos.get_point()
-    print "end position requested", end_pos.get_point()
     bp = bottle_search(start_pos, end_pos, side)
     # print bp
     # quit()

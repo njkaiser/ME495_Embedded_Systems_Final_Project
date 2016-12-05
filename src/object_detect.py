@@ -14,6 +14,7 @@ from sensor_msgs.msg import (
     Image, Range
 )
 
+
 class Output(object):
     def __init__(self):
         self.x = 0
