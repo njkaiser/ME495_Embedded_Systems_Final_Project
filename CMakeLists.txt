@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   std_msgs
   geometry_msgs
+  std_srvs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -69,6 +70,7 @@ find_package(OpenCV)
    DEPENDENCIES
    std_msgs  # Or other packages containing msgs
    geometry_msgs
+   std_srvs
  )
 
 ################################################
