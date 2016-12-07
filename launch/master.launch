@@ -1,0 +1,13 @@
+<launch>
+
+
+  <node name="init_node" pkg="final_project" type="baxter_initialize.py" respawn="false" output="screen" />
+
+  <!-- start master node -->
+  <!-- <node name="master_node" pkg="final_project" type="master.py" respawn="false" output="screen" /> -->
+    <!-- <remap from="image" to="/usb_cam/image_raw" /> -->
+    <!-- <param name="autosize" value="true" /> -->
+  <!-- </node> -->
+
+
+</launch>
