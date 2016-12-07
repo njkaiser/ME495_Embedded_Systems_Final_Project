@@ -1,0 +1,4 @@
+bool data
+---
+float32[] positions
+bool status

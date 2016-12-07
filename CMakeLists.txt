@@ -56,6 +56,7 @@ find_package(OpenCV)
    FILES
    grasp_status.srv
    move.srv
+   sweep.srv
  )
 
 ## Generate actions in the 'action' folder
