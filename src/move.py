@@ -46,9 +46,21 @@ def move_callback(data):
 
     x, y, z = point.x, point.y, point.z
 
-    dx = x - position_now.x
-    dy = y - position_now.y
-    dz = z - position_now.z
+    if side == 'right':
+        cur_x = position_now_R.x
+        cur_y = position_now_R.y
+        cur_z = position_now_R.z
+    elif side == 'left':
+        cur_x = position_now_L.x
+        cur_y = position_now_L.y
+        cur_z = position_now_L.z
+    else:
+        raise ValueError("INVALID SIDE PASSED TO MOVE.PY, OPTIONS ARE 'left' OR 'right'")
+
+
+    dx = x - cur_x
+    dy = y - cur_y
+    dz = z - cur_z
     print 'dx, dy, dz', dx, dy, dz
 
     if npoints == 0:
@@ -124,9 +136,11 @@ def get_present_state(data, position_now):
 
 if __name__ == '__main__':
     rospy.init_node("move_node")
-    position_now = Position()
+    position_now_R = Position()
+    position_now_L = Position()
     ### THIS NEEDS TO USE THE SIDE, NOT HARDCODED FOR RIGHT
-    rospy.Subscriber("/robot/limb/right/endpoint_state", EndpointState, get_present_state, position_now, queue_size=1)
+    rospy.Subscriber("/robot/limb/right/endpoint_state", EndpointState, get_present_state, position_now_R, queue_size=1)
+    rospy.Subscriber("/robot/limb/left/endpoint_state", EndpointState, get_present_state, position_now_L, queue_size=1)
     rospy.Subscriber("/pos_cmd", moveto, move_callback, queue_size=1)
     rospy.Service("/position_service", move, move_callback)
     print "position service initiated"
