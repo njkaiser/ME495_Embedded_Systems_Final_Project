@@ -9,13 +9,14 @@ from geometry_msgs.msg import (
     Quaternion,
 )
 from std_msgs.msg import Header
+# from std_srvs.srv import SetBool
 from baxter_core_msgs.srv import (
     SolvePositionIK,
     SolvePositionIKRequest,
 )
 import numpy as np
 from baxter_core_msgs.msg import EndpointState
-from final_project.srv import move
+from final_project.srv import move, sweep
 from final_project.msg import moveto
 
 # development only:
@@ -173,7 +174,11 @@ def move_callback(data, object_camera_position):
     return 0
 
 
-def main():
+
+
+
+def main(status):
+    go = status.data
     #Subscribe to image
     rospy.Subscriber("/robot/limb/right/endpoint_state", EndpointState, get_present_state, xyz_pres, queue_size=1)
     rospy.Subscriber("/object_image_command", Point, move_callback, object_camera_position, queue_size=1)
@@ -194,15 +199,19 @@ def main():
     bp = bottle_search(start_pos, end_pos, side)
     # print bp
 
-    obj = Point()
-    obj.x = x
-    obj.z = z
-    for i, y in enumerate(bp):
-        obj.y = y
-        print "object ", i, "position : ", obj.x, obj.y, obj.z
-        retval = mvsrv('right', obj, 0.5, 0) # 0 = let node determine npoints
-        inpt = raw_input("holding, press any key to continue: ")
+    # obj = Point()
+    # obj.x = x
+    # obj.z = z
+    # for i, y in enumerate(bp):
+    #     obj.y = y
+    #     print "object ", i, "position : ", obj.x, obj.y, obj.z
+    #     retval = mvsrv('right', obj, 0.6, 0) # 0 = let node determine npoints
+    #     inpt = raw_input("holding, press any key to continue: ")
         # rospy.sleep(5)
+
+    return bp, True # not sure if True is necessary, but I included it in the service prototype anyway in case we want to return False for a failed attempt?
+
+
 
     # xs = [row[1] for row in bp]
     # ys = [row[2] for row in bp]
@@ -264,6 +273,12 @@ def main():
     #     print("LEFT_INVALID POSE - No Valid Joint Solution Found.")
     #
     # left.move_to_joint_positions(limb_joints_l)
+# def main(status):
+#     rospy.Service("/initial_sweep", SetBool, initialize())
+#     rospy.spin()
 
 if __name__ == '__main__':
-    main()
+    # rospy.Service("/initial_sweep", SetBool, main())
+    rospy.Service("/initial_sweep", sweep, main)
+    rospy.spin()
+    # main()
