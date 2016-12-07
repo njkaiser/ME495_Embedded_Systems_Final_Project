@@ -37,8 +37,6 @@ def move_callback(data):
     speed = data.speed
     print speed
     npoints = data.npoints
-    print npoints
-
 
     ns = "ExternalTools/" + side + "/PositionKinematicsNode/IKService"
     iksvc = rospy.ServiceProxy(ns, SolvePositionIK)
@@ -51,10 +49,17 @@ def move_callback(data):
     dx = x - position_now.x
     dy = y - position_now.y
     dz = z - position_now.z
+    print 'dx, dy, dz', dx, dy, dz
+
+    if npoints == 0:
+        dist = np.sqrt(dx**2 + dy**2 + dz**2)
+        npoints = int(dist / 0.01)
+        print npoints
 
     xs = np.linspace(x - dx, x, npoints, endpoint=True)
     ys = np.linspace(y - dy, y, npoints, endpoint=True)
     zs = np.linspace(z - dz, z, npoints, endpoint=True)
+
 
     for i in np.arange(npoints):
         pose = {
@@ -93,7 +98,7 @@ def move_callback(data):
             # Format solution into Limb API-compatible dictionary
             limb_joints = dict(zip(resp.joints[0].name, resp.joints[0].position))
             # arm.set_joint_positions(limb_joints)
-            if i == npoints - 1:
+            if i == npoints - 1 and npoints > 10: # SWAG
                 arm.move_to_joint_positions(limb_joints)
             else:
                 arm.set_joint_positions(limb_joints)

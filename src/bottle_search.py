@@ -18,6 +18,10 @@ from baxter_core_msgs.msg import EndpointState
 from final_project.srv import move
 from final_project.msg import moveto
 
+# development only:
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
 
 
 class Position(object):
@@ -28,6 +32,7 @@ class Position(object):
         self.z = z # VERTICAL, + is up
 
     def get_point(self):
+        # return coordinates as Point()
         p = Point()
         p.x = self.x
         p.y = self.y
@@ -40,9 +45,8 @@ rospy.init_node("joint_move_cartesian")
 side = 'right'
 arm = baxter_interface.Limb(side)
 
-xyz = Position(0., 0., 0.)
-
-xyz_pres = Position(0., 0., 0.)
+object_camera_position = Position()
+xyz_pres = Position()
 
 ns = "ExternalTools/" + side + "/PositionKinematicsNode/IKService"
 iksvc = rospy.ServiceProxy(ns, SolvePositionIK)
@@ -52,58 +56,129 @@ mvsrv = rospy.ServiceProxy("position_service", move)
 mvpub = rospy.Publisher("pos_cmd", moveto, queue_size=1)
 
 
-
 def bottle_search(start, end, side):
-    y_start = start.y
-    y_end = end.y
-    dy = abs(y_start - y_end)
-    npoints = int(dy/0.01) # SWAG
-    x = start.x
-    z = start.z
-    # for i, y in enumerate(np.linspace(y_start, y_end, npoints, endpoint=True)):
-    # rospy.wait_for_service(move, 5.0)
-    # x = 0.9
-    # y = -0.5
-    # z = 0.0
-    start = Point()
-    start.x, start.y, start.z = x, y_start, z
-    print "start position requested: ", start
-    retval = mvsrv('right', start, 0.5, npoints)
 
+    startpoint = Point()
+    startpoint = start.get_point()
+    print "start position requested: ", start.x, start.y, start.z
+    retval = mvsrv('right', start, 0.7, 0) # 0 = let node determine npoints
 
+    endpoint = end.get_point()
+    print "end position requested", end.x, end.y, end.z
+    mvpub.publish('right', end, 0.12, 0) # 0 = let node determine npoints
 
-    end = Point()
-    end.x, end.y, end.z = x, y_end, z
-    print "end position requested", end
-    mvpub.publish('right', end, 0.2, npoints)
+    # x, y, z = end.x, end.y, end.z
 
+    # dx = x - xyz_pres.x
+    # dy = y - xyz_pres.y
+    # dz = z - xyz_pres.z
+    # # print 'dx, dy, dz', dx, dy, dz
+    # dist = np.sqrt(dx**2 + dy**2 + dz**2)
+    # npoints = int(dist / 0.01)
+    #
+    # xs = np.linspace(x - dx, x, npoints, endpoint=True)
+    # ys = np.linspace(y - dy, y, npoints, endpoint=True)
+    # zs = np.linspace(z - dz, z, npoints, endpoint=True)
+    #
+    # print "npoints", npoints
 
-    return 0
+    # for i in np.arange(npoints):
+    #     print i
+    #     ppp = Point()
+    #     ppp.x = xs[i]
+    #     ppp.y = ys[i]
+    #     ppp.z = zs[i]
+    #     mvpub.publish('right', ppp, 0.2, 1)
+    #     rospy.sleep(0.025/0.2)
+    #     if object_camera_position.x < 20 and object_camera_position.x !=0:
+    #         print "THE CAMERA VALUE EXITED THE BOTTLE SEARCH LOOP"
+    #         return 0
 
+    # post process and determine where the objects are
+    object_positions = []
+    while(abs(xyz_pres.y - end.y) > 0.02):
+        tmp = object_camera_position.x
+        threshold = 35
+        if tmp < threshold and tmp > -threshold and tmp != 0:
+            print object_camera_position.x
+            print xyz_pres.x, xyz_pres.y, xyz_pres.z
+            object_positions.append([object_camera_position.x, xyz_pres.x, xyz_pres.y, xyz_pres.z])
+        rospy.sleep(0.1)
+
+    # n_objects = 3 # number of objects we're searching for
+    separation = 0.05 # distance between object detections before they're not the same object
+    ys = [row[2] for row in object_positions]
+    diffs = np.diff(ys)
+    diffs = np.insert(diffs, 0, 0)
+    # print 'diffs'
+    # print diffs
+    # print type(diffs)
+    count = 0
+    tot = 0
+    output = []
+    for i, y in enumerate(ys):
+        if diffs[i] > separation or i == len(ys) - 1:
+            output.append(tot/count)
+            tot = 0
+            count = 0
+        tot += y
+        count += 1
+
+    print 'OUTPUT'
+    print output
+
+    zs = [row[3] for row in object_positions]
+
+    # fig = plt.figure('x-y-z of robot end-effector')
+    # ax = fig.gca(projection='3d')
+    # ax.scatter(xs, ys, zs)
+    plt.figure()
+    for v in output:
+        plt.axvline(x=v)
+    plt.scatter(ys, zs)
+    plt.show()
+
+    # while(object_camera_position.x > 20 or object_camera_position.x == 0):
+    #     print object_camera_position.x
+    #     rospy.sleep(0.15)
+    #
+    # while(True):
+    #     if object_camera_position.x != 0:
+    #         obj_xyz_pos = xyz_pres
+    #         print "THE CAMERA VALUE EXITED THE BOTTLE SEARCH LOOP WITH VALUE", obj_xyz_pos.x, obj_xyz_pos.y, obj_xyz_pos.z
+    #         return 0
+    #     else:
+    #         rospy.sleep(0.1)
+    #         pass
+
+    # mvpub.publish('right', xyz_pres.get_point(), 0.1, 0) # 0 = let node determine npoints
+
+    # return object_positions
+    return output
 
 
 def get_present_state(data, xyz_pres):
-        x = data.pose.position.x
-        y = data.pose.position.y
-        z = data.pose.position.z
-        xyz_pres.x = x
-        xyz_pres.y = y
-        xyz_pres.z = z
+    x = data.pose.position.x
+    y = data.pose.position.y
+    z = data.pose.position.z
+    xyz_pres.x = x
+    xyz_pres.y = y
+    xyz_pres.z = z
+    return 0
 
 
-
-def move_callback(data, xyz):
-    xyz.x = data.x
-    xyz.y = data.y
-    xyz.z = data.z
+def move_callback(data, object_camera_position):
+    object_camera_position.x = data.x
+    object_camera_position.y = data.y
+    object_camera_position.z = data.z
     return 0
 
 
 def main():
     #Subscribe to image
     rospy.Subscriber("/robot/limb/right/endpoint_state", EndpointState, get_present_state, xyz_pres, queue_size=1)
-    rospy.Subscriber("/object_image_command", Point, move_callback, xyz, queue_size=1)
-    rospy.Publisher("pos_cmd", moveto, queue_size=1)
+    rospy.Subscriber("/object_image_command", Point, move_callback, object_camera_position, queue_size=1)
+    rospy.Publisher("/pos_cmd", moveto, queue_size=1)
 
     rospy.wait_for_service(ns, 5.0)
     rospy.sleep(0.05)
@@ -111,7 +186,7 @@ def main():
     x = 0.9
     y_start = -0.5
     y_end = 0.2
-    z = 0.0
+    z = -0.05
     start_pos = Position(x, y_start, z)
     end_pos = Position(x, y_end, z)
 
@@ -119,6 +194,24 @@ def main():
     # for i in np.arange(3):
     bp = bottle_search(start_pos, end_pos, side)
     # print bp
+
+    obj = Point()
+    obj.x = x
+    obj.z = z
+    for i, y in enumerate(bp):
+        obj.y = y
+        print "object ", i, "position : ", obj.x, obj.y, obj.z
+        retval = mvsrv('right', obj, 0.5, 0) # 0 = let node determine npoints
+        inpt = raw_input("holding, press any key to continue: ")
+        # rospy.sleep(5)
+
+    # xs = [row[1] for row in bp]
+    # ys = [row[2] for row in bp]
+    # zs = [row[3] for row in bp]
+
+    # fig = plt.figure('x-y-z of robot end-effector')
+    # ax = fig.gca(projection='3d')
+    # ax.scatter(xs, ys, zs)
     # quit()
     # bottle_positions.append(bp)
     # print "type(start_pos)", type(start_pos)
