@@ -1,0 +1,5 @@
+string side
+geometry_msgs/Point position
+string command
+---
+bool status
