@@ -1,4 +1,5 @@
 string side
 geometry_msgs/Point point
+geometry_msgs/Quaternion quaternion
 float32 speed
 int16 npoints

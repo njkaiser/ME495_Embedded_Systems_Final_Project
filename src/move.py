@@ -34,6 +34,8 @@ def move_callback(data):
     print side
     point = data.point
     print point
+    quaternion = data.quaternion
+    print quaternion
     speed = data.speed
     print speed
     npoints = data.npoints
@@ -88,10 +90,10 @@ def move_callback(data):
                     ),
                     # e-e must be maintained in this orientation
                     orientation = Quaternion(
-                        x = 0.0,
-                        y = 0.71,
-                        z = 0.0,
-                        w = 0.71,
+                        x = quaternion.x,
+                        y = quaternion.y,
+                        z = quaternion.z,
+                        w = quaternion.w,
                     ),
                 ),
             ),

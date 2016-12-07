@@ -201,11 +201,11 @@ def timed_output(event):
     p.y = output.y
     if output.x != 0. or output.y != 0.: # or output.z != 0
         p.z = output.z
-        print "THIS IS THE OUTPUT WHEN x/y != 0:", p.x, p.y, p.z
+        # print "THIS IS THE OUTPUT WHEN x/y != 0:", p.x, p.y, p.z
     else:
         # print "NO IDEA WHY THIS IS HERE"
         p.z = 0.
-        print "THIS IS THE OUTPUT WHEN x/y == 0:", p.x, p.y, p.z
+        # print "THIS IS THE OUTPUT WHEN x/y == 0:", p.x, p.y, p.z
 
     img_pub.publish(p)
     return p

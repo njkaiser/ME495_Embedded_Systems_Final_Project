@@ -55,17 +55,20 @@ ikreq = SolvePositionIKRequest()
 mvsrv = rospy.ServiceProxy("position_service", move)
 mvpub = rospy.Publisher("pos_cmd", moveto, queue_size=1)
 
+q0 = Quaternion()
+q0.x, q0.y, q0.z, q0.w = 0.0, 0.71, 0.0, 0.71
+
 
 def bottle_search(start, end, side):
 
     startpoint = Point()
     startpoint = start.get_point()
     print "start position requested: ", start.x, start.y, start.z
-    retval = mvsrv('right', start, 0.7, 0) # 0 = let node determine npoints
+    retval = mvsrv(side, start, q0, 0.7, 0) # 0 = let node determine npoints
 
     endpoint = end.get_point()
     print "end position requested", end.x, end.y, end.z
-    mvpub.publish('right', end, 0.12, 0) # 0 = let node determine npoints
+    mvpub.publish(side, end, q0, 0.12, 0) # 0 = let node determine npoints
 
     # x, y, z = end.x, end.y, end.z
 
@@ -189,8 +192,8 @@ def main(status):
 
     x = 0.9
     y_start = -0.5
-    y_end = 0.2
-    z = -0.05
+    y_end = 0.1
+    z = -0.06
     start_pos = Position(x, y_start, z)
     end_pos = Position(x, y_end, z)
 

@@ -13,6 +13,13 @@
   <node name="check_holding_object" pkg="final_project" type="check_holding_object.py" respawn="true" output="screen" />
   <node name="grasp" pkg="final_project" type="grab_object_miss_detecting.py" respawn="true" output="screen" />
 
+  <!-- start node to pour after we've grabbed object -->
+  <node name="pour" pkg="final_project" type="pour.py" respawn="true" output="screen" />
+
+
+  <!-- start node to move left arm to pour position -->
+  <node name="left_arm_moving" pkg="final_project" type="left_limb_moving.py" respawn="true" output="screen" />
+
   <!-- start node to search sweep for ingredients (does not run until called by master) -->
   <node name="bottle_search" pkg="final_project" type="bottle_search.py" respawn="false" output="screen" />
 
