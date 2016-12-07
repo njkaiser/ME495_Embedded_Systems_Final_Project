@@ -278,7 +278,5 @@ def main(status):
 #     rospy.spin()
 
 if __name__ == '__main__':
-    # rospy.Service("/initial_sweep", SetBool, main())
     rospy.Service("/initial_sweep", sweep, main)
     rospy.spin()
-    # main()

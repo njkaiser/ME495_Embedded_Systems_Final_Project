@@ -7,7 +7,11 @@
   <node name="move_node" pkg="final_project" type="move.py" respawn="true" output="screen" />
 
   <!-- start vision processing / object detection node -->
-  <!-- <node name="object_detect" pkg="final_project" type="object_detect.py" respawn="true" output="screen" /> -->
+  <node name="object_detect" pkg="final_project" type="object_detect.py" respawn="true" output="screen" />
+
+  <!-- start nodes for grasping objects -->
+  <node name="check_holding_object" pkg="final_project" type="check_holding_object.py" respawn="true" output="screen" />
+  <node name="grasp" pkg="final_project" type="grab_object_miss_detecting.py" respawn="true" output="screen" />
 
   <!-- start node to search sweep for ingredients (does not run until called by master) -->
   <node name="bottle_search" pkg="final_project" type="bottle_search.py" respawn="false" output="screen" />

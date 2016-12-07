@@ -9,18 +9,41 @@ from geometry_msgs.msg import (
 )
 import roslaunch
 
-from final_project.srv import sweep
+from final_project.srv import sweep, grasp
 # from std_srvs.srv import SetBool
 
 
 if __name__ == '__main__':
     rospy.init_node("master_node")
 
+    # run initial sweep looking for ingredients, return y (horizontal) coordinates
     sweep = rospy.ServiceProxy("/initial_sweep", sweep)
     rospy.wait_for_service("/initial_sweep", 3.0)
-    sweep_return = sweep(True)
+    object_y = sweep(True)
     print "RETURNED VALUE FROM SWEEP NODE"
-    print sweep_return
+    print object_y
+
+
+    # pass object positions to grasp node, 1 by 1
+    obj = Point()
+    x = 0.9
+    z = -0.05
+    obj.x = x
+    obj.z = z
+    for i, y in enumerate(object_y.positions):
+        obj.y = y
+        print "object ", i, "position : ", obj.x, obj.y, obj.z
+
+    # head to first object and grab it
+    grasp = rospy.ServiceProxy("/grasp", grasp)
+    rospy.wait_for_service("/grasp", 3.0)
+    grasp_return = grasp('right', obj, 'get')
+    print grasp_return
+
+
+
+
+    ### TRIED THIS, BUT IT DOESN'T WORK THAT WELL:
     # package = 'final_project'
     # executable = 'bottle_search.py'
     # node = roslaunch.core.Node(package, executable)

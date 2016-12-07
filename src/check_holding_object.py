@@ -1,21 +1,22 @@
 #!/usr/bin/env python
 import argparse
- 
+
 import rospy
- 
+
 import baxter_interface
 import baxter_external_devices
- 
-from baxter_interface import CHECK_VERSION
+
+# from baxter_interface import CHECK_VERSION
 from final_project.srv import grasp_status
+
+
 
 def main():
 	rospy.init_node("check_holding_object")
-	s = rospy.Service("graspstatus",grasp_status,srv_callback)
-	freq = 10.0
-	rate = rospy.Rate(freq)
-	# rospy.sleep(1)
+	s = rospy.Service("graspstatus", grasp_status, srv_callback)
+	rate = rospy.Rate(10)
 	rospy.spin()
+
 
 def srv_callback(ss):
 	#set object size force parameters
