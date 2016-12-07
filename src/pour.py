@@ -55,8 +55,8 @@ def main(data):
     # move to pour position
     goto = xyz_pres.get_point()
     goto.x = 0.95
-    goto.y = 0.05
-    goto.z = 0.35
+    goto.y = -0.04
+    goto.z = 0.4
     retval = mvsrv(side, goto, q0, 0.6, 0) # 0 = let node determine npoints
 
 
@@ -107,7 +107,7 @@ def main(data):
         print("LEFT_INVALID POSE - No Valid Joint Solution Found.")
 
     # hold for a sec
-    rospy.sleep(1.0)
+    rospy.sleep(0.3)
 
     # tilt back to vertical position
     hdr = Header(stamp=rospy.Time.now(), frame_id='base')

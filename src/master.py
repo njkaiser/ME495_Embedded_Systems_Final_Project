@@ -45,25 +45,12 @@ if __name__ == '__main__':
         grasp_return = grasp('right', obj, 'get')
         print grasp_return
 
-        left_return = left_srv(1)
+        left_return = left_srv(1) # bring mixer to pour position
 
         pour_return = pour(True)
         print pour_return
 
+    left_return = left_srv(0) # return mixer to table
 
-
-
-    ### TRIED THIS, BUT IT DOESN'T WORK THAT WELL:
-    # package = 'final_project'
-    # executable = 'bottle_search.py'
-    # node = roslaunch.core.Node(package, executable)
-    #
-    # launch = roslaunch.scriptapi.ROSLaunch()
-    # launch.start()
-    #
-    # process = launch.launch(node)
-    # print process.is_alive()
-    # # process.stop()
-    # rospy.spin()
 
     # main()

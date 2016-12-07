@@ -46,16 +46,16 @@ def main():
 	first_time_call = True
 
 	start_pos = Point()
-	start_pos.x, start_pos.y, start_pos.z = 0.75, 0.65, -0.0548
+	start_pos.x, start_pos.y, start_pos.z = 0.75, 0.65, 0.0
 	npoints = 0 #using default value
 
 	final_pos = Point()
-	final_pos.x, final_pos.y, final_pos.z = 0.9, 0.25, 0.2
+	final_pos.x, final_pos.y, final_pos.z = 0.95, 0.02, 0.1
 
 	center_pos = Point()
 	center_pos.x = 0.78
-	center_pos.y = 0.02
-	center_pos.z = 0.12
+	center_pos.y = 0.22
+	center_pos.z = 0.1
 	# center_pos = Point()
 	# center_pos.x, center_pos.y, center_pos.z = start_pos.x, start_pos.y, final_pos.z
 
