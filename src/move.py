@@ -31,13 +31,13 @@ class Position(object):
 def move_callback(data):
 	#set object size force parameters
     side = data.side
-    print side
+    # print side
     point = data.point
-    print point
+    # print point
     quaternion = data.quaternion
-    print quaternion
+    # print quaternion
     speed = data.speed
-    print speed
+    # print speed
     npoints = data.npoints
 
     ns = "ExternalTools/" + side + "/PositionKinematicsNode/IKService"
@@ -68,7 +68,7 @@ def move_callback(data):
     if npoints == 0:
         dist = np.sqrt(dx**2 + dy**2 + dz**2)
         npoints = int(dist / 0.01)
-        print npoints
+        # print npoints
 
     xs = np.linspace(x - dx, x, npoints, endpoint=True)
     ys = np.linspace(y - dy, y, npoints, endpoint=True)
@@ -102,26 +102,25 @@ def move_callback(data):
         ikreq = SolvePositionIKRequest()
         ikreq.pose_stamp = [pose[side]]
 
-        try:
-            resp = iksvc(ikreq)
-        except (rospy.ServiceException, rospy.ROSException), e:
-            rospy.logerr("Service call failed: %s" % (e,))
-            return
-        if (resp.isValid[0]):
-            # print("LEFT_SUCCESS - Valid Joint Solution Found:")
-            # Format solution into Limb API-compatible dictionary
-            limb_joints = dict(zip(resp.joints[0].name, resp.joints[0].position))
-            # arm.set_joint_positions(limb_joints)
-            if i == npoints - 1 and npoints > 10: # SWAG
-                arm.move_to_joint_positions(limb_joints)
+        count = 0
+        while count < 10:
+            try:
+                resp = iksvc(ikreq)
+            except (rospy.ServiceException, rospy.ROSException), e:
+                rospy.logerr("Service call failed: %s" % (e,))
+                return
+            if (resp.isValid[0]):
+                limb_joints = dict(zip(resp.joints[0].name, resp.joints[0].position))
+                # arm.set_joint_positions(limb_joints)
+                if i == npoints - 1 and npoints > 10 or npoints == 1: # SWAG
+                    arm.move_to_joint_positions(limb_joints)
+                else:
+                    arm.set_joint_positions(limb_joints)
+                    rospy.sleep(0.025/speed)
+                break
             else:
-                arm.set_joint_positions(limb_joints)
-                rospy.sleep(0.025/speed)
-
-        else:
-            print("INVALID POSE - No Valid Joint Solution Found.")
-            return -1
-
+                print("INVALID POSE - No Valid Joint Solution Found.")
+            count += 1
     return 1
 
 

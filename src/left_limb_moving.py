@@ -50,7 +50,7 @@ def main():
 	npoints = 0 #using default value
 
 	final_pos = Point()
-	final_pos.x, final_pos.y, final_pos.z = 0.95, 0.02, 0.1
+	final_pos.x, final_pos.y, final_pos.z = 0.92, 0.02, 0.1
 
 	center_pos = Point()
 	center_pos.x = 0.78
@@ -58,7 +58,6 @@ def main():
 	center_pos.z = 0.1
 	# center_pos = Point()
 	# center_pos.x, center_pos.y, center_pos.z = start_pos.x, start_pos.y, final_pos.z
-
 
 	#Create a publisher
 	command_srv = rospy.Service("/left_limb_command", SetBool, left_limb_srv_callback)
@@ -70,19 +69,31 @@ def main():
 
 def left_limb_srv_callback(req):
 	# if req is true, come to middle position
+	# mvsrv = rospy.ServiceProxy("/position_service", move)
+	# print req.data
+	# if req.data:
+	# 	global first_time_call
+	# 	if first_time_call:
+	# 		#now close the gripper to hold the bottle
+	# 		rospy.sleep(1)
+	# 		left_gripper = baxter_interface.Gripper('left')
+	# 		left_gripper.close()
+	# 		rospy.sleep(2)
+	# 		first_time_call = False
+	#
+	# 	come_to_center(mvsrv)
+	# else:
+	# 	go_back(mvsrv)
+	#
+	# return True, "Left_limb finished"
+	# print "GOT HERE ABC123CHINATEAAA"
 	mvsrv = rospy.ServiceProxy("/position_service", move)
-	print req.data
+	# print "GOT HERE 456pickupsticks"
+	rospy.wait_for_service("/position_service", 3)
 	if req.data:
-		global first_time_call
-		if first_time_call:
-			#now close the gripper to hold the bottle
-			rospy.sleep(1)
-			left_gripper = baxter_interface.Gripper('left')
-			left_gripper.close()
-			rospy.sleep(2)
-			first_time_call = False
-
+		# print "derp 1"
 		come_to_center(mvsrv)
+		# print "derp 2"
 	else:
 		go_back(mvsrv)
 
@@ -95,13 +106,13 @@ def come_to_center(mvsrv):
 	global final_pos
 	global npoints
 
-	try:
-		# rospy.wait_for_service("/position_service",5)
-		retval = mvsrv('left', center_pos, q_c, 0.5, npoints)
-	except (rospy.ServiceException, rospy.ROSException), e:
-		rospy.logerr("Service call failed: %s" % (e,))
-		return
-	rospy.sleep(0.2)
+	# try:
+	# 	# rospy.wait_for_service("/position_service",5)
+	# 	retval = mvsrv('left', center_pos, q_c, 0.5, npoints)
+	# except (rospy.ServiceException, rospy.ROSException), e:
+	# 	rospy.logerr("Service call failed: %s" % (e,))
+	# 	return
+	# rospy.sleep(0.2)
 	# move to the final center position
 	try:
 		# rospy.wait_for_service("/position_service",5)

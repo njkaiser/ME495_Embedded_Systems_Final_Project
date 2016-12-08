@@ -1,7 +1,7 @@
 <launch>
 
   <!-- initialize Baxter -->
-  <node name="init_node" pkg="final_project" type="baxter_initialize.py" respawn="false" output="screen" />
+  <!-- <node name="init_node" pkg="final_project" type="baxter_initialize.py" respawn="false" output="screen" /> -->
 
   <!-- start motion service node -->
   <node name="move_node" pkg="final_project" type="move.py" respawn="true" output="screen" />

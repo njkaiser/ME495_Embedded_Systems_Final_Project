@@ -49,13 +49,13 @@ def main(data):
 
     # move up a bit to clear objects on table
     goto = xyz_pres.get_point()
-    goto.z += 0.1
-    retval = mvsrv(side, goto, q0, 0.4, 0) # 0 = let node determine npoints
+    goto.z += 0.05
+    retval = mvsrv(side, goto, q0, 0.5, 0) # 0 = let node determine npoints
 
     # move to pour position
     goto = xyz_pres.get_point()
     goto.x = 0.95
-    goto.y = -0.04
+    goto.y = -0.1
     goto.z = 0.4
     retval = mvsrv(side, goto, q0, 0.6, 0) # 0 = let node determine npoints
 
@@ -64,99 +64,121 @@ def main(data):
     arm = baxter_interface.Limb(side)
     gripper = baxter_interface.Gripper(side)
     ns = "ExternalTools/" + side + "/PositionKinematicsNode/IKService"
+    rospy.wait_for_service(ns, 5)
     iksvc = rospy.ServiceProxy(ns, SolvePositionIK)
     ikreq = SolvePositionIKRequest()
 
     # tilt to pour
-    hdr = Header(stamp=rospy.Time.now(), frame_id='base')
-    pose = {
-        side: PoseStamped(
-            header=hdr,
-            pose=Pose(
-                position=Point(
-                    x = goto.x,
-                    y = goto.y,
-                    z = goto.z,
-                ),
-                orientation=Quaternion(
-                    x = 0.622736455639,
-                    y = -0.280677044169,
-                    z = 0.631915418651,
-                    w = -0.366200228517,
-                ),
-            ),
-        ),
-    }
+    q_pour = Quaternion()
+    q_pour.x = 0.622736455639
+    q_pour.y = -0.280677044169
+    q_pour.z = 0.631915418651
+    q_pour.w = -0.366200228517
+    retval = mvsrv(side, goto, q_pour, 0.6, 1) # 1 = only 1 point needed to move between
 
-    ikreq.pose_stamp = [pose[side]]
-
-    try:
-        # rospy.wait_for_service(ns, 5.0)
-        resp = iksvc(ikreq)
-    except (rospy.ServiceException, rospy.ROSException), e:
-        rospy.logerr("Service call failed: %s" % (e,))
-        return
-
-    if (resp.isValid[0]):
-        # print("LEFT_SUCCESS - Valid Joint Solution Found:")
-        # Format solution into Limb API-compatible dictionary
-        limb_joints = dict(zip(resp.joints[0].name, resp.joints[0].position))
-        arm.move_to_joint_positions(limb_joints)
-        # print limb_joints
-    else:
-        print("LEFT_INVALID POSE - No Valid Joint Solution Found.")
+    # hdr = Header(stamp=rospy.Time.now(), frame_id='base')
+    # pose = {
+    #     side: PoseStamped(
+    #         header=hdr,
+    #         pose=Pose(
+    #             position=Point(
+    #                 x = goto.x,
+    #                 y = goto.y,
+    #                 z = goto.z,
+    #             ),
+    #             orientation=Quaternion(
+    #                 x = 0.622736455639,
+    #                 y = -0.280677044169,
+    #                 z = 0.631915418651,
+    #                 w = -0.366200228517,
+    #             ),
+    #         ),
+    #     ),
+    # }
+    #
+    # ikreq.pose_stamp = [pose[side]]
+    #
+    # try:
+    #     # rospy.wait_for_service(ns, 5.0)
+    #     resp = iksvc(ikreq)
+    # except (rospy.ServiceException, rospy.ROSException), e:
+    #     rospy.logerr("Service call failed: %s" % (e,))
+    #     return
+    #
+    # if (resp.isValid[0]):
+    #     # print("LEFT_SUCCESS - Valid Joint Solution Found:")
+    #     # Format solution into Limb API-compatible dictionary
+    #     limb_joints = dict(zip(resp.joints[0].name, resp.joints[0].position))
+    #     arm.move_to_joint_positions(limb_joints)
+    #     # print limb_joints
+    # else:
+    #     print("LEFT_INVALID POSE - No Valid Joint Solution Found.")
 
     # hold for a sec
-    rospy.sleep(0.3)
+    # print "MADE IT HERE, SLEEPING FOR 8 SECONDS"
+    # rospy.sleep(8)
 
     # tilt back to vertical position
-    hdr = Header(stamp=rospy.Time.now(), frame_id='base')
-    pose = {
-        side: PoseStamped(
-            header=hdr,
-            pose=Pose(
-                position=Point(
-                    x = goto.x,
-                    y = goto.y,
-                    z = goto.z,
-                ),
-                orientation=Quaternion(
-                    x = 0.0,
-                    y = 0.71,
-                    z = 0.0,
-                    w = 0.71,
-                ),
-            ),
-        ),
-    }
-
-    ikreq.pose_stamp = [pose[side]]
-
-    try:
-        # rospy.wait_for_service(ns, 5.0)
-        resp = iksvc(ikreq)
-    except (rospy.ServiceException, rospy.ROSException), e:
-        rospy.logerr("Service call failed: %s" % (e,))
-        return
-
-    if (resp.isValid[0]):
-        # print("LEFT_SUCCESS - Valid Joint Solution Found:")
-        # Format solution into Limb API-compatible dictionary
-        limb_joints = dict(zip(resp.joints[0].name, resp.joints[0].position))
-        arm.move_to_joint_positions(limb_joints)
-        # print limb_joints
-    else:
-        print("LEFT_INVALID POSE - No Valid Joint Solution Found.")
+    retval = mvsrv(side, goto, q0, 0.6, 1) # 1 = only 1 point needed to move between
+    # hdr = Header(stamp=rospy.Time.now(), frame_id='base')
+    # pose = {
+    #     side: PoseStamped(
+    #         header=hdr,
+    #         pose=Pose(
+    #             position=Point(
+    #                 x = goto.x,
+    #                 y = goto.y,
+    #                 z = goto.z,
+    #             ),
+    #             orientation=Quaternion(
+    #                 x = 0.0,
+    #                 y = 0.71,
+    #                 z = 0.0,
+    #                 w = 0.71,
+    #             ),
+    #         ),
+    #     ),
+    # }
+    #
+    # ikreq.pose_stamp = [pose[side]]
+    #
+    # try:
+    #     # rospy.wait_for_service(ns, 5.0)
+    #     resp = iksvc(ikreq)
+    # except (rospy.ServiceException, rospy.ROSException), e:
+    #     rospy.logerr("Service call failed: %s" % (e,))
+    #     return
+    #
+    # if (resp.isValid[0]):
+    #     # print("LEFT_SUCCESS - Valid Joint Solution Found:")
+    #     # Format solution into Limb API-compatible dictionary
+    #     limb_joints = dict(zip(resp.joints[0].name, resp.joints[0].position))
+    #     arm.move_to_joint_positions(limb_joints)
+    #     # print limb_joints
+    # else:
+    #     print("LEFT_INVALID POSE - No Valid Joint Solution Found.")
 
 
 
     # now move back to original position to
-    retval = mvsrv(side, origin, q0, 0.4, 0) # 0 = let node determine npoints
+    check_point = Point()
+    check_point.x = origin.x
+    check_point.y = origin.y
+    check_point.z = goto.z
+    retval = mvsrv(side, check_point, q0, 0.6, 0) # 0 = let node determine npoints
+    origin.z -= 0.3
+    retval = mvsrv(side, origin, q0, 0.3, 0) # 0 = let node determine npoints
 
-    rospy.sleep(0.5)
+    rospy.sleep(0.2)
 
     # drop it like it's hot
     gripper.open()
+    rospy.sleep(0.5)
+    origin.x -= 0.08
+    origin.z += 0.02
+    retval = mvsrv(side, origin, q0, 0.6, 0) # 0 = let node determine npoints
+
+
 
     return True, "pour.py executed successfully"
 

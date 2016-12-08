@@ -83,20 +83,23 @@ def main(data):
 	else:
 		print "detect object"
 
-	goto.x = goto.x + range_data.val - 0.065
+	if range_ave > 0.15:
+		range_ave = 0.15 # clip in case IR measurement misses object
+
+	goto.x = goto.x + range_ave - 0.06
 	retval = mvsrv(side, goto, q0, 0.2, 0) # 0 = let node determine npoints
-	rospy.sleep(0.75)
+	rospy.sleep(0.3)
 
 	gripper.close()
-	rospy.sleep(0.5)
+	rospy.sleep(0.2)
 	req = rospy.ServiceProxy("graspstatus", grasp_status)
 	rep = req(1)
 	success = rep.success_grasp
 	print(success)
-	rospy.sleep(1)
+	rospy.sleep(0.05)
 
-	goto.z = goto.z + 0.2
-	retval = mvsrv(side, goto, q0, 0.5, 0) # 0 = let node determine npoints
+	goto.z = goto.z + 0.3
+	retval = mvsrv(side, goto, q0, 0.6, 0) # 0 = let node determine npoints
 
 	# rospy.sleep(2.0)
 	# gripper.open()
