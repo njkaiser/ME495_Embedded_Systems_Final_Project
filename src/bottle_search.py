@@ -135,11 +135,11 @@ def bottle_search(start, end, side):
     # fig = plt.figure('x-y-z of robot end-effector')
     # ax = fig.gca(projection='3d')
     # ax.scatter(xs, ys, zs)
-    plt.figure()
-    for v in output:
-        plt.axvline(x=v)
-    plt.scatter(ys, zs)
-    plt.show()
+    # plt.figure()
+    # for v in output:
+    #     plt.axvline(x=v)
+    # plt.scatter(ys, zs)
+    # plt.show()
 
     # while(object_camera_position.x > 20 or object_camera_position.x == 0):
     #     print object_camera_position.x

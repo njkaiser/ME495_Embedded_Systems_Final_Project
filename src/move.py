@@ -103,7 +103,7 @@ def move_callback(data):
         ikreq.pose_stamp = [pose[side]]
 
         count = 0
-        while count < 10:
+        while count < 3:
             try:
                 resp = iksvc(ikreq)
             except (rospy.ServiceException, rospy.ROSException), e:

@@ -83,8 +83,8 @@ def main(data):
 	else:
 		print "detect object"
 
-	if range_ave > 0.15:
-		range_ave = 0.15 # clip in case IR measurement misses object
+	if range_ave > 0.18:
+		range_ave = 0.18 # clip in case IR measurement misses object
 
 	goto.x = goto.x + range_ave - 0.06
 	retval = mvsrv(side, goto, q0, 0.2, 0) # 0 = let node determine npoints
