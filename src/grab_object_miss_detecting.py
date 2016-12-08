@@ -62,6 +62,27 @@ def main(data):
 
 	# gripper.open()
 
+	#take average for 20 times
+	range_sum = 0.0
+	ii = 0
+	while ii<20:
+		range_sum = range_sum+range_data.val
+		ii = ii+1
+	range_ave = range_sum/ii
+	if range_ave > 0.2:
+		# search_left = original_pos+0.02
+		# search_right = original_pos-0.02
+
+		# goto.y = search_right
+		# retval = mvsrv(side, goto, q0, 0.2, 0)
+		# if range_data.val <0.2:
+		# 	#now get the object
+		# 	goto.y = original_pos
+		# 	retval = mvsrv(side, goto, q0, 0.2, 0)
+		print "Cannot detect the object"
+	else:
+		print "detect object"
+
 	goto.x = goto.x + range_data.val - 0.065
 	retval = mvsrv(side, goto, q0, 0.2, 0) # 0 = let node determine npoints
 	rospy.sleep(0.75)
@@ -89,6 +110,9 @@ def main(data):
 
 def range_callback(rr):
 	range_data.val = rr.range
+
+
+
 	# global range_list
 	# range_list = rr.range
 	# if not range_list[-1]==None:
