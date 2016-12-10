@@ -1,12 +1,12 @@
 ME495 Embedded Systems in Robotics: Final Project
 ==============
-#### Baxter the Barista
-#### Group 6: Nate Kaiser, Brianna Odom, Chainatee Tanakulrungson, Jiarui Yang
+#### *Baxter the Barista*
+#### *Group 6: Nate Kaiser, Brianna Odom, Chainatee Tanakulrungson, Jiarui Yang*
 
 ## Introduction / Overview of Project
 The objective of our project was to have [Baxter][99] work as a personal barista. Given a choice of drinks, he would search through his inventory and try to pour a mixture of drinks into a cup being held in his left hand. This would be accomplished by sending him a given input that corresponded to the positions of the ingredients on the table, and he would execute the task by searching through them, grabbing the desired combination, and pouring them into a mixture container in his other hand.  
 
-**Procedure:**
+**Procedure:**   
 1. Baxter sweeps the three red cups with his right camera   
 2. Stores the objects positions   
 3. Goes back to resting position   
@@ -48,9 +48,9 @@ The [`ar_detect.py`][15] node that was written for this project provided an alte
 
 Particular issues stemming from resolution and lighting deterred us from integrating this node into our project. The [`object_detect.py`][16] node was used in its place.
 
-Two good sources for tutorials and information on using `ar_track_alvar` and AR tags:
-1. [Github for ar_track_alvar by Sniekum][17]
-2. [Former Northwestern University MSR student's mini project][18]
+Two good sources for tutorials and information on using `ar_track_alvar` and AR tags:   
+1. [Github for ar_track_alvar by Sniekum][17]   
+2. [Former Northwestern University MSR student's mini project][18]   
 
 ### Inverse Kinematics & Motion Planning
 One of the main challenges for this project was to have Baxter not maintain a vertical orientation for each of the bottles he poured. This section is broken down into how to move Baxter to a preferred point in space, how to maintain the bottle's vertical orientation along the path, and the code behind it.
