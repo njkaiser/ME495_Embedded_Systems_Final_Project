@@ -7,15 +7,15 @@ ME495 Embedded Systems in Robotics: Final Project
 The objective of our project was to have [Baxter][99] work as a personal barista. Given a choice of drinks, he would search through his inventory and try to pour a mixture of drinks into a cup being held in his left hand. This would be accomplished by sending him a given input that corresponded to the positions of the ingredients on the table, and he would execute the task by searching through them, grabbing the desired combination, and pouring them into a mixture container in his other hand.  
 
 **Procedure:**
-1. Baxter sweeps the three red cups with his right camera
-2. Stores the objects positions
-3. Goes back to resting position
-4. Takes in a given input combination of drinks
-5. Goes to the given positions of the desired drinks
-6. Grabs a drink one at a time
-7. Goes to empty cup held in left hand
-8. Pours the drink into empty cup in his left hand
-9. Continues procedure until mixture is completed
+1. Baxter sweeps the three red cups with his right camera   
+2. Stores the objects positions   
+3. Goes back to resting position   
+4. Takes in a given input combination of drinks   
+5. Goes to the given positions of the desired drinks   
+6. Grabs a drink one at a time   
+7. Goes to empty cup held in left hand   
+8. Pours the drink into empty cup in his left hand   
+9. Continues procedure until mixture is completed   
 
 ![Screenshot](https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/master/media/BaxterPouring.JPG)
 
