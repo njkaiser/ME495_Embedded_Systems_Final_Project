@@ -4,9 +4,22 @@ ME495 Embedded Systems in Robotics: Final Project
 #### Group 6: Nate Kaiser, Brianna Odom, Chainatee Tanakulrungson, Jiarui Yang
 
 ## Introduction / Overview of Project
-TODO: ADD INTRO
+The objective of our project was to have [Baxter][99] work as a personal barista. Given a choice of drinks, he would search through his inventory and try to pour a mixture of drinks into a cup being held in his left hand. This would be accomplished by sending him a given input that corresponded to the positions of the ingredients on the table, and he would execute the task by searching through them, grabbing the desired combination, and pouring them into a mixture container in his other hand.  
 
-The project can be found at [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project][1] and a video recording of the running software at [https://www.youtube.com/watch?v=EI69LpWt1M4][2]
+**Procedure:**
+1. Baxter sweeps the three red cups with his right camera
+2. Stores the objects positions
+3. Goes back to resting position
+4. Takes in a given input combination of drinks
+5. Goes to the given positions of the desired drinks
+6. Grabs a drink one at a time
+7. Goes to empty cup held in left hand
+8. Pours the drink into empty cup in his left hand
+9. Continues procedure until mixture is completed
+
+![Screenshot][0]
+
+The project can be found at [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project][1] and a video recording of the demonstration at [https://www.youtube.com/watch?v=EI69LpWt1M4][2]
 
 
 ## Overview of Functionalities
@@ -57,9 +70,9 @@ To facilitate an easy use of this functionality, we made a custom service messag
 
 
 ### Gripper Control
-The grabbing of objects is accomplished using the [grab_object_miss_detecting.py][22] node. After the vision processing node  coordinates of the bottles, gripper will go to the corresponding grabbing position. Then IR sensor data is taken by subscribing to `/robot/range/right_hand_range/state` topic with `Range` message type. This message will give us the x coordinate of object in gripper frame. Then using [move.py](https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/9554cc2bbe60da78325f366dd5018dc12ccd75ec/src/move.py) to move gripper towards the bottles. Once the distance between bottle and gripper sensor is less than 0.06, it will stop and then close the gripper.
+The grabbing of objects is accomplished using the [grab_object_miss_detecting.py][22] node. After the vision processing node  coordinates of the bottles, gripper will go to the corresponding grabbing position. Then IR sensor data is taken by subscribing to `/robot/range/right_hand_range/state` topic with `Range` message type. This message will give us the x coordinate of object in gripper frame. Then using `move.py` to move gripper towards the bottles. Once the distance between bottle and gripper sensor is less than 0.06, it will stop and then close the gripper.
 
-Some difficulties were encountered when incorporate with IR sensor. Since it is a few centermeters off the center frame of the camera, it will be at a slightly different y axis value as detected by the camera. And since our object bottles are fairly thin columns, sometimes it will not see the bottle. Thus, we set a threshold of the max IR sensor data to be 0.2 and average values over 20 samples. This somehow increase our chance of successfully detecting objects.
+Some difficulties were encountered when incorporate with IR sensor. Since it is a few centimeters off the center frame of the camera, it will be at a slightly different y axis value as detected by the camera. And since our object bottles are fairly thin columns, sometimes it will not see the bottle. Thus, we set a threshold of the max IR sensor data to be 0.2 and average values over 20 samples. This somehow increase our chance of successfully detecting objects.
 
 After call the [close](https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/9554cc2bbe60da78325f366dd5018dc12ccd75ec/src/grab_object_miss_detecting.py#L93) function of the gripper, a service call to a custom service [grasp_status](https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/9554cc2bbe60da78325f366dd5018dc12ccd75ec/srv/grasp_status.srv) is invoked. This service contain one input and one output. It takes an integer 1 or 0 to tell it close() function was being called. Then it will detect if the object is actully being successfully grabbed. If it is, then return int 1, otherwise 0. The service server [check_holding_object.py](https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/9554cc2bbe60da78325f366dd5018dc12ccd75ec/src/check_holding_object.py) has two criteria, position and force, to determine if an object is being grabbed. Gripper has force and position function will check the status of the gripper end. If no force/very small force is deteced or very close position between two grippers, it will know that grasping failed. Note that here all the parameters of object size/force being used are all determined by repeating tests and then hard coded into.
 
@@ -71,11 +84,9 @@ In addition, in order for the `check_holding_object.py` to work properly, certai
 Left limb mainly works depend on IK service. [left_limb_moving.py](https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/9554cc2bbe60da78325f366dd5018dc12ccd75ec/src/left_limb_moving.py) will use std_srv `SetBool` service which can sent a boolean and return a bool and a string message. It has two major function, `come_to_center` and `go_back`, corresponding to the operation of moving left limb to the center for getting the pour and go back to original state. Note that for the left limb gripper holding the container bottle, it is "put" into baxter's hand instead of himself grabbing the bottle from the table.
 
 
-## File Locations
-
-
-another [link][2].
-
+<!-- ## File Locations -->
+[99]: [http://www.rethinkrobotics.com/baxter/]
+[0]: [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/master/media/BaxterPouring.JPG]
 [1]: [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project]
 [2]: [https://www.youtube.com/watch?v=EI69LpWt1M4]
 [3]: [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/master/src/master.py]
@@ -96,7 +107,7 @@ another [link][2].
 [18]: [https://github.com/ablarry91/ros-tag-tracking]
 [19]: [http://docs.ros.org/api/geometry_msgs/html/msg/PoseStamped.html]
 [20]: [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/master/srv/move.srv]
-[21]: [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/master/src/move.py#L146]
+[21]: [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/master/src/move.py]
 [22]: [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/master/src/grab_object_miss_detecting.py]
 [23]: [link]
 [25]: [link]
