@@ -42,7 +42,7 @@ The original intent of vision processing was to implement visual servoing as the
 ### AR Tag Tracking
 Ar_tag tracking using [`ar_track_alvar`][13] is a tracking method in ROS that gives pose estimates to an object and provides a unique way to identify a particular object in a set of objects that have uniform or similar attributes.
 
-![Examples of ar_tags](http://mirror-eu.wiki.ros.org/attachments/ar_track_alvar/markers9to17.png =20x20)
+![Examples of ar_tags](http://mirror-eu.wiki.ros.org/attachments/ar_track_alvar/markers9to17.png)
 
 The [`ar_detect.py`][15] node that was written for this project provided an alternative to object color detection to identify each object. It subscribes to the topics `cameras/right_hand_camera/image`, `cameras/right_hand_camera/camera_info`, and `/ar_pose/marker` on Baxter and publishes the x,y,z coordinates and ID of the object.
 
