@@ -11,12 +11,19 @@ The project can be found at [https://github.com/njkaiser/ME495_Embedded_Systems_
 
 ## Overview of Functionalities
 ### Master Node & User Input
-The [`master`][3] node provides a framework for the overall package functionality, acting as a high level manager to each of the underlying nodes. After initializing and waiting for all required [custom services][4], `master` calls the [`ingredient_search`][5] node to extract all ingredient positions as a `list` type object. The user then enters the indices of the ingredients they wish to have Baxter mix (input must be valid integers, each separated by a space), index values starting at 1 and incrementing from left to right. Master checks the input and asks for it again if the input is invalid.
+The [`master`][3] node provides a framework for the overall package functionality, acting as a high level manager to each of the underlying nodes. After initializing and waiting for all required [custom services][4], `master.py` calls the [`ingredient_search`][5] node to extract all ingredient positions as a `list` type object. The user enters the indices of the ingredients they wish to have Baxter mix, with the index values starting at 1 and incrementing from left to right. Master then checks the input and asks for it again if the input is invalid - the input must be integers separated by spaces.
 
-Once the initial steps are completed and user input received, Baxter calls the custom [`/grasp`][6] service to grab the ingredient of interest. If the grab is executed successfully, the [`/left_limb_command`][7] service from the [`left_arm_moving`][8] node is then called to bring the left hand to the correct position for pouring. Finally, the pour is executed using the [`pour`][9] service located in [`pour.py`][10]
+Once the initial steps are completed and user input received, Baxter calls the custom [`/grasp`][6] service to grab the ingredient of interest. If the grab is executed successfully, the [`/left_limb_command`][7] service from the [`left_arm_moving`][8] node is then called to bring the left hand to the correct position for pouring. Finally, the pour is executed using the [`pour`][9] service located in [`pour.py`][10], and the ingredient is returned to its original position.
+
+This process is repeated for each of the user-input indices, until all ingredients have been mixed. After all ingredients have been picked, poured, and returned, the left hand brings the mixing cup to the counter for service.
 
 
 ### Vision Processing
+The vision processing node [`vision.py`][11] is called during the initial ingredient search sweep. It subscribes to `/cameras/right_hand_camera/image` and `/robot/range/right_hand_range/state` topics, and publishes a `Point()` object to `/object_image_command` containing the x- and y-pixel differences between object center and image center. The z-coordinate contains the infrared range sensor data, in case it's beneficial to incorporate it into the vision algorithms in future improvements or expansions.
+
+The node works by using Baxter's right hand camera image and [*OpenCV*][12] to extract only the pixels whose HSV values correspond to red (in the ranges [0, 10] and [170, 179]). The centroid of any large contiguous red areas are extracted, processed, and published for use by the IK and movement services. The message is published using a [rospy timer][13] to lower the corresponding image callback's computational footprint.
+
+The original intent of vision processing was to implement visual servoing as the hand approached the object, but time considerations precluded it working robustly enough for use given Baxter's dynamic challenges in such a short time frame. The node runs as expected and can be found in the [`unused/`][14] directory.
 
 
 ### AR Tag Tracking
@@ -52,3 +59,12 @@ another [link][2].
 [5]: [link_to_initial_sweep_node]
 [6]: [link_to_grasp_service_node]
 [7]: [/left_limb_command]
+[8]: [link]
+[9]: [link]
+[10]: [link]
+[11]: [link]
+[12]: [http://opencv.org/]
+[13]: [http://wiki.ros.org/rospy/Overview/Time]
+[14]: [unused_directory]
+[14]: [link]
+[16]: [link]
