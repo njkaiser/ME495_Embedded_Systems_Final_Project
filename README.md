@@ -13,27 +13,51 @@ The project can be found at [https://github.com/njkaiser/ME495_Embedded_Systems_
 ### Master Node & User Input
 The [`master`][3] node provides a framework for the overall package functionality, acting as a high level manager to each of the underlying nodes. After initializing and waiting for all required [custom services][4], `master.py` calls the [`ingredient_search`][5] node to extract all ingredient positions as a `list` type object. The user enters the indices of the ingredients they wish to have Baxter mix, with the index values starting at 1 and incrementing from left to right. Master then checks the input and asks for it again if the input is invalid - the input must be integers separated by spaces.
 
-Once the initial steps are completed and user input received, Baxter calls the custom [`/grasp`][6] service to grab the ingredient of interest. If the grab is executed successfully, the [`/left_limb_command`][7] service from the [`left_arm_moving`][8] node is then called to bring the left hand to the correct position for pouring. Finally, the pour is executed using the [`pour`][9] service located in [`pour.py`][10], and the ingredient is returned to its original position.
+Once the initial steps are completed and user input received, Baxter calls [`grab_object_miss_detecting.py`][6] service to grab the ingredient of interest. If the grab is executed successfully, the [`left_limb_moving`][7] node is then called to bring the left hand to the correct position for pouring on the `/left_limb_command` service topic. Finally, the pour is executed with a `pour` service call, triggering a callback in [`pour.py`][8], and the ingredient is returned to its original position.
 
 This process is repeated for each of the user-input indices, until all ingredients have been mixed. After all ingredients have been picked, poured, and returned, the left hand brings the mixing cup to the counter for service.
 
 
 ### Vision Processing
-The vision processing node [`vision.py`][11] is called during the initial ingredient search sweep. It subscribes to `/cameras/right_hand_camera/image` and `/robot/range/right_hand_range/state` topics, and publishes a `Point()` object to `/object_image_command` containing the x- and y-pixel differences between object center and image center. The z-coordinate contains the infrared range sensor data, in case it's beneficial to incorporate it into the vision algorithms in future improvements or expansions.
+The vision processing node [`vision.py`][9] is called during the initial ingredient search sweep. It subscribes to `/cameras/right_hand_camera/image` and `/robot/range/right_hand_range/state` topics, and publishes a `Point()` object to `/object_image_command` containing the x- and y-pixel differences between object center and image center. The z-coordinate contains the infrared range sensor data, in case it's beneficial to incorporate it into the vision algorithms in future improvements or expansions.
 
-The node works by using Baxter's right hand camera image and [*OpenCV*][12] to extract only the pixels whose HSV values correspond to red (in the ranges [0, 10] and [170, 179]). The centroid of any large contiguous red areas are extracted, processed, and published for use by the IK and movement services. The message is published using a [rospy timer][13] to lower the corresponding image callback's computational footprint.
+The node works by using Baxter's right hand camera image and [*OpenCV*][10] to extract only the pixels whose HSV values correspond to red (in the ranges [0, 10] and [170, 179]). The centroid of any large contiguous red areas are extracted, processed, and published for use by the IK and movement services discussed below. The message is published using a [rospy timer][11] to lower the corresponding image callback's computational footprint.
 
-The original intent of vision processing was to implement visual servoing as the hand approached the object, but time considerations precluded it working robustly enough for use given Baxter's dynamic challenges in such a short time frame. The node runs as expected and can be found in the [`unused/`][14] directory.
+The original intent of vision processing was to implement visual servoing as the hand approached the object, but time considerations precluded it working robustly enough for use given Baxter's dynamic challenges in such a short time frame. The node runs as expected and can be found in the [`unused/`][12] directory.
 
 
 ### AR Tag Tracking
+Ar_tag tracking using [`ar_track_alvar`][13] is a tracking method in ROS that gives pose estimates to an object and provides a unique way to identify a particular object in a set of objects that have uniform or similar attributes.
 
+![Examples of ar_tags][14]
+
+The [`ar_detect.py`][15] node that was written for this project provided an alternative to object color detection to identify each object. It subscribes to the topics `cameras/right_hand_camera/image`, `cameras/right_hand_camera/camera_info`, and `/ar_pose/marker` on Baxter and publishes the x,y,z coordinates and ID of the object.
+
+Particular issues stemming from resolution and lighting deterred us from integrating this node into our project. The [`object_detect.py`][16] node was used in its place.
+
+Two good sources for tutorials and information on using `al_track_alvar` and ar_tags:
+1. [Github for ar_track_alvar by Sniekum][17]
+2. [Former Northwestern University MSR student's mini project][18]
 
 ### Inverse Kinematics & Motion Planning
+One of the main challenges for this project was to have Baxter not maintain a vertical orientation for each of the bottles he poured. This section is broken down into how to move Baxter to a preferred point in space, how to maintain the bottle's vertical orientation along the path, and the code behind it.
+
+##### Moving Baxter Using `IKSolver`
+IKSolver is a service provided within Baxter. The protocol uses the desired pose as a [`PoseStamped`][19] message. The `IKSolver` then finds the joint angles required to move from the present joint state to the called state.
+
+This service is very easy to use. However, some issues may yield invalid solutions. One such example is when the `Pose` portion of `PoseStamped` is out of Baxter's reachable workspace or the default seed angles yield no solution.
+
+To fix such problems, the user has to ensure the pose is in the reachable workspace. If it is, `IKSolver` can be called repeatedly, or different seed angles can be given using strategies such as randomization.
+
+##### Maintaining Vertical Orientation
+In order not to ensure Baxter doesn't spill any liquid, we set the `Quaternion` field in the requested `PoseStamped` message to a constant value. Moreover, since we have to ensure that the container will not tilt while moving from one point to the next, we move incrementally by segmenting the path into small, discrete steps. With small enough steps, the `IKSolver` will almost always return the desired joint solution (the one that produces small joint movements), ensuring the bottle does not twist too far off-center or flip over during an unwanted inverting of his arm.
+
+##### Code Implemenation
+To facilitate an easy use of this functionality, we made a custom service message called [`move.srv`][20] used to request movement from the node [`move.py`][21], which takes arguments for limb side, desired x-y-z position, desired quaternion, speed multiplier, and optionally a number of discrete steps to take along the trajectory. If this optional argument is passed a zero, the node calculates its own optimized step count instead.
 
 
 ### Gripper Control
-The grabbing of objects is accomplished by the [grab_object_miss_detecting.py](https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/9554cc2bbe60da78325f366dd5018dc12ccd75ec/src/grab_object_miss_detecting.py) node. After the vision processing node  coordinates of the bottles, gripper will go to the corresponding grabbing position. Then IR sensor data was taken by subscribing to `/robot/range/right_hand_range/state` topic with `Range` message type. This message will give us the x coordinate of object in gripper frame. Then using [move.py](https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/9554cc2bbe60da78325f366dd5018dc12ccd75ec/src/move.py) to move gripper towards the bottles. Once the distance between bottle and gripper sensor is less than 0.06, it will stop and then close the gripper.
+The grabbing of objects is accomplished using the [grab_object_miss_detecting.py][22] node. After the vision processing node  coordinates of the bottles, gripper will go to the corresponding grabbing position. Then IR sensor data is taken by subscribing to `/robot/range/right_hand_range/state` topic with `Range` message type. This message will give us the x coordinate of object in gripper frame. Then using [move.py](https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/9554cc2bbe60da78325f366dd5018dc12ccd75ec/src/move.py) to move gripper towards the bottles. Once the distance between bottle and gripper sensor is less than 0.06, it will stop and then close the gripper.
 
 Some difficulties were encountered when incorporate with IR sensor. Since it is a few centermeters off the center frame of the camera, it will be at a slightly different y axis value as detected by the camera. And since our object bottles are fairly thin columns, sometimes it will not see the bottle. Thus, we set a threshold of the max IR sensor data to be 0.2 and average values over 20 samples. This somehow increase our chance of successfully detecting objects.
 
@@ -54,17 +78,29 @@ another [link][2].
 
 [1]: [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project]
 [2]: [https://www.youtube.com/watch?v=EI69LpWt1M4]
-[3]: [master_node]
-[4]: [link_to_services_directory]
-[5]: [link_to_initial_sweep_node]
-[6]: [link_to_grasp_service_node]
-[7]: [/left_limb_command]
-[8]: [link]
-[9]: [link]
-[10]: [link]
-[11]: [link]
-[12]: [http://opencv.org/]
-[13]: [http://wiki.ros.org/rospy/Overview/Time]
-[14]: [unused_directory]
-[14]: [link]
-[16]: [link]
+[3]: [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/master/src/master.py]
+[4]: [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/tree/master/srv]
+[5]: [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/master/src/ingredient_search.py]
+[6]: [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/master/src/grab_object_miss_detecting.py]
+[7]: [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/master/src/left_limb_moving.py]
+[8]: [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/master/src/pour.py]
+[9]: [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/master/src/vision.py]
+[10]: [http://opencv.org/]
+[11]: [http://wiki.ros.org/rospy/Overview/Time]
+[12]: [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/tree/master/unused]
+[13]: [http://wiki.ros.org/ar_track_alvar]
+[14]: [http://mirror-eu.wiki.ros.org/attachments/ar_track_alvar/markers9to17.png=20x20]
+[15]: [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/master/unused/ar_detect.py]
+[16]: [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/master/src/object_detect.py]
+[17]: [https://github.com/sniekum/ar_track_alvar]
+[18]: [https://github.com/ablarry91/ros-tag-tracking]
+[19]: [http://docs.ros.org/api/geometry_msgs/html/msg/PoseStamped.html]
+[20]: [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/master/srv/move.srv]
+[21]: [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/master/src/move.py#L146]
+[22]: [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/master/src/grab_object_miss_detecting.py]
+[23]: [link]
+[25]: [link]
+[26]: [link]
+[27]: [link]
+[28]: [link]
+[29]: [link]
