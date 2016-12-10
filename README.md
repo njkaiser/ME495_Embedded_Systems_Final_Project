@@ -6,11 +6,14 @@ ME495 Embedded Systems in Robotics: Final Project
 ## Introduction / Overview of Project
 TODO: ADD INTRO
 
-The project can be found at [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project][1]
+The project can be found at [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project][1] and a video recording of the running software at [https://www.youtube.com/watch?v=EI69LpWt1M4][2]
 
 
 ## Overview of Functionalities
-### Master Node
+### Master Node & User Input
+The [`master`][3] node provides a framework for the overall package functionality, acting as a high level manager to each of the underlying nodes. After initializing and waiting for all required [custom services][4], `master` calls the [`ingredient_search`][5] node to extract all ingredient positions as a `list` type object. The user then enters the indices of the ingredients they wish to have Baxter mix (input must be valid integers, each separated by a space), index values starting at 1 and incrementing from left to right. Master checks the input and asks for it again if the input is invalid.
+
+Once the initial steps are completed and user input received, Baxter calls the custom [`/grasp`][6] service to grab the ingredient of interest. If the grab is executed successfully, the [`/left_limb_command`][7] service from the [`left_arm_moving`][8] node is then called to bring the left hand to the correct position for pouring. Finally, the pour is executed using the [`pour`][9] service located in [`pour.py`][10]
 
 
 ### Vision Processing
@@ -37,10 +40,15 @@ In addition, in order for the `check_holding_object.py` to work properly, certai
 Left limb mainly works depend on IK service. [left_limb_moving.py](https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/9554cc2bbe60da78325f366dd5018dc12ccd75ec/src/left_limb_moving.py) will use std_srv `SetBool` service which can sent a boolean and return a bool and a string message. It has two major function, `come_to_center` and `go_back`, corresponding to the operation of moving left limb to the center for getting the pour and go back to original state. Note that for the left limb gripper holding the container bottle, it is "put" into baxter's hand instead of himself grabbing the bottle from the table.
 
 
-
+## File Locations
 
 
 another [link][2].
 
 [1]: [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project]
-[2]: http://example.org/
+[2]: [https://www.youtube.com/watch?v=EI69LpWt1M4]
+[3]: [master_node]
+[4]: [link_to_services_directory]
+[5]: [link_to_initial_sweep_node]
+[6]: [link_to_grasp_service_node]
+[7]: [/left_limb_command]
