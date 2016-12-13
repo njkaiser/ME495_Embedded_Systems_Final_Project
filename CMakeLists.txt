@@ -10,6 +10,9 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   geometry_msgs
   std_srvs
+  cv_bridge
+  baxter_core_msgs
+  baxter_interface
 )
 
 ## System dependencies are found with CMake's conventions
