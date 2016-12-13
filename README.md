@@ -4,10 +4,10 @@ ME495 Embedded Systems in Robotics: Final Project
 #### *Group 6: Nate Kaiser, Brianna Odom, Chainatee Tanakulrungson, Jiarui Yang*
 
 ## Introduction / Overview of Project
-The objective of our project was to have [Baxter][99] work as a personal barista. Given a choice of drinks, he would search through his inventory and try to pour a mixture of drinks into a cup being held in his left hand. This would be accomplished by sending him a given input that corresponded to the positions of the ingredients on the table, and he would execute the task by searching through them, grabbing the desired combination, and pouring them into a mixture container in his other hand.  
+The objective of our project was to have [Baxter][99] work as a personal barista. Given a desired drink, he would search through his inventory and pour a combination of ingredients into a shaker held in his other hand. This would be accomplished by sending him a given input of ingredients he has available on the table, and he would then execute the task by searching through them, grabbing the desired combination, and pouring them into the shaker.  
 
 **Procedure:**   
-1. Baxter sweeps the table looking for ingredients with his right camera   
+1. Baxter sweeps the table looking for ingredients with his hand camera   
 2. The user inputs a desired drink recipe to have mixed   
 3. He goes to the given positions of the desired drinks   
 4. And grabs each ingredient one-at-a-time   
@@ -16,7 +16,7 @@ The objective of our project was to have [Baxter][99] work as a personal barista
 
 ![Screenshot](https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/master/media/BaxterPouring.JPG)
 
-The project can be found at [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project][0] and a video recording of the demonstration at [https://www.youtube.com/watch?v=EI69LpWt1M4][1] or [https://vimeo.com/195121510][2]
+The project can be found on GitHub at [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project][0] and video recordings of the demonstration at [https://www.youtube.com/watch?v=EI69LpWt1M4][1] or [https://vimeo.com/195121510][2]
 
 
 ## Overview of Functionalities
