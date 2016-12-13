@@ -49,11 +49,11 @@ The [`ar_detect.py`][15] node that was written for this project provided an alte
 Particular issues stemming from resolution and lighting deterred us from integrating this node into our project. The [`object_detect.py`][16] node was used in its place.
 
 Two good sources for tutorials and information on using `ar_track_alvar` and AR tags:   
-1. [Github for ar_track_alvar by Sniekum][17]   
-2. [Former Northwestern University MSR student's mini project][18]   
+1. [Github for ar_track_alvar by Sniekum](https://github.com/sniekum/ar_track_alvar)  
+2. [Former Northwestern University MSR students' mini project](https://github.com/ablarry91/ros-tag-tracking)  
 
 ### Inverse Kinematics & Motion Planning
-One of the main challenges for this project was to have Baxter not maintain a vertical orientation for each of the bottles he poured. This section is broken down into how to move Baxter to a preferred point in space, how to maintain the bottle's vertical orientation along the path, and the code behind it.
+One of the main challenges for this project was to have Baxter maintain a vertical orientation for each of the bottles he poured. This section is broken down into how to move Baxter to a preferred point in space, how to maintain the bottle's vertical orientation along the path, and the code behind it.
 
 ##### Moving Baxter Using `IKSolver`
 IKSolver is a service provided within Baxter. The protocol uses the desired pose as a [`PoseStamped`][19] message. The `IKSolver` then finds the joint angles required to move from the present joint state to the called state.
@@ -110,8 +110,3 @@ The left arm simply sends position requests to `move.py`. [`left_limb_moving.py`
 [22]: [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/master/src/grab_object_miss_detecting.py]
 [23]: [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/9554cc2bbe60da78325f366dd5018dc12ccd75ec/srv/grasp_status.srv]
 [24]: [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/9554cc2bbe60da78325f366dd5018dc12ccd75ec/src/check_holding_object.py]
-[25]: [link]
-[26]: [link]
-[27]: [link]
-[28]: [link]
-[29]: [link]
