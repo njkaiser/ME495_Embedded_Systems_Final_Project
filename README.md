@@ -14,7 +14,7 @@ The objective of our project was to have [Baxter][99] work as a personal barista
 5. He pours each into the mixing cup in his left hand   
 6. And continues this procedure until the mixture is completed   
 
-![Screenshot](https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/master/media/BaxterPouring.JPG)
+![Screenshot](https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/master/media/baxter_pouring.JPG)
 
 The project can be found on GitHub at [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project][0] and video recordings of the demonstration at [https://www.youtube.com/watch?v=ngZCMMJjaLA][1] or [https://vimeo.com/195121510][2]
 
