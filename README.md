@@ -16,7 +16,7 @@ The objective of our project was to have [Baxter][99] work as a personal barista
 
 ![Screenshot](https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/master/media/BaxterPouring.JPG)
 
-The project can be found on GitHub at [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project][0] and video recordings of the demonstration at [https://www.youtube.com/watch?v=EI69LpWt1M4][1] or [https://vimeo.com/195121510][2]
+The project can be found on GitHub at [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project][0] and video recordings of the demonstration at [https://www.youtube.com/watch?v=ngZCMMJjaLA][1] or [https://vimeo.com/195121510][2]
 
 
 ## Overview of Functionalities
@@ -83,7 +83,7 @@ The left arm simply sends position requests to `move.py`. [`left_limb_moving.py`
 <!-- ## File Locations -->
 [99]: [http://www.rethinkrobotics.com/baxter/]
 [0]: [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project]
-[1]: [https://www.youtube.com/watch?v=EI69LpWt1M4]
+[1]: [https://www.youtube.com/watch?v=ngZCMMJjaLA]
 [2]: [https://vimeo.com/195121510]
 [3]: [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/blob/master/src/master.py]
 [4]: [https://github.com/njkaiser/ME495_Embedded_Systems_Final_Project/tree/master/srv]
